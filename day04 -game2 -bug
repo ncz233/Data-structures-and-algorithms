@@ -1,0 +1,340 @@
+************************************************************************************SeqList.h
+#pragma once
+#include<stdio.h>
+#include<stdlib.h>
+#include<assert.h>
+
+//顺序表，有效数组在数组中必须是连续的
+//静态顺序表设计(固定大小)
+//typedef int SLDataType;//以后想改类型在这里改
+//#define N 10//以后要改多大就该多大
+//
+//// vector
+//struct SeqList
+//{
+//	SLDataType a[N];
+//	int size;
+//
+//};
+//
+////void SeqListPushBack(struct SeqList* ps, int x);//只能存int类型，存别的类型需要改
+////void SeqListPushBack(struct SeqList* ps, SLDataType x);//所以重定义改一个就行了这样就行了
+//void SeqListPushBack(struct SeqList* ps, SLDataType x);//尾插
+//void SeqListPopBack(struct SeqList* ps);//尾删
+//void SeqListPushFront(struct SeqList* ps, SLDataType x);//头插
+//void SeqListPopFront(struct SeqList* ps);//头删
+
+//动态顺序表设计(大小可变)
+typedef int SLDataType;//以后想改类型在这里改
+
+// vector
+typedef struct SeqList
+{
+	SLDataType* a;
+	int size;//有效数据的个数
+	//等有效数据容量快到空间的容量，那空间扩容
+	int capacity; //空间的容量 
+}SL,SeqList;
+
+//初始化
+void SeqListInit(SL* ps);
+
+//打印
+void SeqListprint(SL* ps);
+
+//扩容
+void SeqListCheckCapacity(SL* ps);
+
+//尾插尾删  头插头删
+void SeqListPushBack(SL* ps, SLDataType x);//尾插
+void SeqListPopBack(SL* ps);//尾删
+void SeqListPushFront(SL* ps, SLDataType x);//头插
+void SeqListPopFront(SL* ps);//头删
+
+//任意地方的插入和删除
+void SeqListInsert(SL* ps, int pos, SLDataType x);//随机一个地方插入:插入的结构体，插入的位置，插入的数据
+void SeqListErase(SL* ps, int pos);//随机一个地方删除
+
+//因为是动态开辟所以要销毁
+void SeqListDestory(SL* ps);//销毁
+
+//顺序表查照
+int SeqListFind(SL* ps1, SLDataType x);
+
+
+******************************************************************************************************SeqList.c
+#define _CRT_SECURE_NO_WARNINGS 1
+#include"SeqList.h"
+
+//初始化
+void SeqListInit(SL* ps)
+{
+	//s.size = 0;
+	//s.a = NULL;
+	//s.capacity = 0;
+
+	ps->a = (SLDataType*)malloc(sizeof(SLDataType) * 4);
+	if (ps->a == NULL)
+	{
+		printf("申请内存失败\n");
+		exit(-1);
+	}
+
+	ps->size = 0;
+	ps->capacity = 4;
+}
+
+//打印
+void SeqListprint(SL* ps)
+{
+	assert(ps);
+	for (size_t i = 0; i < ps->size; i++)
+	{
+		printf("%d ", ps->a[i]);
+	}
+	printf("\n");
+}
+
+//扩容
+void SeqListCheckCapacity(SL* ps)
+{
+	if (ps->size == ps->capacity)
+	{
+		ps->capacity *= 2;
+		ps->a = (SLDataType*)realloc(ps->a, sizeof(SLDataType) * ps->capacity);
+		if (ps->a == NULL)
+		{
+			printf("增容失败\n");
+			exit(-1);
+		}
+	}
+}
+
+//尾插尾删  头插头删
+//尾插
+void SeqListPushBack(SL* ps, SLDataType x)
+{
+	//assert(ps);
+
+	////扩容
+	//SeqListCheckCapacity(ps);
+
+	//ps->a[ps->size] = x;
+	//ps->size++;
+
+	SeqListInsert(ps, ps->size, x);
+
+}
+
+//尾删
+void SeqListPopBack(SL* ps)
+{
+	//assert(ps);
+	////ps->a[ps->size - 1] = 0;//万一那个位置就是0呢，
+	//ps->size--;
+
+	SeqListErase(ps, ps->size - 1);
+}
+
+//头插 - 要挪动
+void SeqListPushFront(SL* ps, SLDataType x)
+{
+	//assert(ps);
+	////扩容
+	//SeqListCheckCapacity(ps);
+
+	//int end = ps->size - 1;
+	//while (end>=0)
+	//{
+	//	ps->a[end + 1] = ps->a[end];
+	//	end--;
+	//}
+
+	//ps->a[0] = x;
+	//ps->size++;
+
+	SeqListInsert(ps, 0, x);
+}
+
+void SeqListPopFront(SL* ps)//头删
+{
+	assert(ps);
+
+	int start = 0;
+	while (start < ps->size-1)
+	{
+		ps->a[start] = ps->a[start + 1];
+		start++;
+	}
+	ps->size--;
+
+	//SeqListErase(ps, 0);
+
+}
+
+//任意地方的插入和删除
+//size_t也行
+void SeqListInsert(SL* ps, int pos, SLDataType x)
+{
+	assert(ps);
+	assert(pos <= ps->size && pos >= 0);
+
+	SeqListCheckCapacity(ps);
+
+	int end = ps->size - 1;
+	while (end >= pos)
+	{
+		ps->a[end + 1] = ps->a[end];
+		end--;
+	}
+
+	ps->a[pos] = x;
+	ps->size++;
+}
+
+void SeqListErase(SL* ps, int pos)
+{
+	assert(pos);
+	assert(pos < ps->size && pos >= 0);
+
+	int start = pos;
+	while (start < ps->size-1)
+	{
+		ps->a[start] = ps->a[start + 1];
+		start++;
+	}
+	ps->size--;
+
+}
+
+//查找
+int SeqListFind(SL* ps, SLDataType x)
+{
+	assert(ps);
+
+	int i = 0;
+	while (i<ps->size)
+	{
+		if (ps->a[i] == x)
+		{
+			return i;
+		}
+		i++;
+	}
+
+	return -1;
+}
+
+//销毁
+void SeqListDestory(SL* ps)
+{
+	free(ps->a);
+	ps->a = NULL;
+	ps->size = ps->capacity = 0;
+
+	return 0;
+}
+
+
+
+********************************************************************************************************day03.c
+#define _CRT_SECURE_NO_WARNINGS 1
+#include "SeqList.h"
+
+//练习
+
+//找出消失的数字
+//时间复杂度O(N)
+//提示：^按位异或:相同为0，相异为1
+//int main()
+//{
+//
+//
+//	return 0;
+//}
+
+//数组中数字只出现2次，有两个数只出现一次
+// 时间复杂度O(N),空间复杂度O(1)
+//找单身狗 - 经典题
+//提示：^按位异或:相同为0，相异为1和分组
+// 
+//int main()
+//{
+//
+//
+//	return 0;
+// }
+
+//数据结构实际两种结构
+// 物理：内存中如何存储的
+// 逻辑：是我们想象出来的
+
+//线性表
+//顺序表
+//链表
+//顺序表和链表的区别和联系
+
+//线性表：不是内存(物理)上是连续的，逻辑上是连续的
+//宽泛的来说：顺序表、链表、栈、队列、字符串都可以叫线性表
+
+//线性表在物理上有两种
+// 数组：连续存储的(逻辑上也是连续的)，数组会有巨大的缺陷，你不知道你要存有多少个，它不能按需索取，要按需索取的话顺序表给出一个方案是重新分配，但是它也要付出代价(栈区上)
+// 链表：(物理不是连续，逻辑是连续)存一个开一个空间，存两个开两个，按需索取，但它们是一个一个分离的值，所以我们用指针连续起来，每一个空间后半段存的是下一个空间的地址，直到最后一个存的是null空地址才结束(最好实在堆区上的)
+//  补充：栈区是向下生长的。堆区是向上生长的(但是堆区是有意外，有可能下面的内存被释放，然后新加的内存会跑到下面来)，所以线性表是逻辑上是连续，不是物理
+// 缺陷
+//  数组：不会按需索取
+//  链表：不好排序，二分查找。不能随机访问
+// 所以他们是互补的
+//
+
+//顺序表
+// 顺序表其实就是使用数组结构来存储数据的
+//本质上就是数组
+
+//增删查改注意两件事情
+//保持空间足够
+//保持空间里面的数据是连续的
+void TestSeqListl()
+{
+	SeqList s;//先初始化
+	SeqListInit(&s);//初始化
+
+	SeqListPushBack(&s, 1);
+	SeqListPushBack(&s, 2);
+	SeqListPushBack(&s, 3);
+	SeqListPushBack(&s, 4);
+	SeqListPushBack(&s, 5);//越界不一定会报错，越界到一定阈值的时候一定会报错
+	SeqListPushBack(&s, 6);
+	SeqListPushBack(&s, 7);
+	SeqListPushBack(&s, 8);
+	//SeqListPushBack(&s, 9);
+	SeqListprint(&s);
+
+	SeqListPopBack(&s);
+	SeqListPopBack(&s);
+	SeqListprint(&s);
+
+	SeqListPushFront(&s, -1);
+	SeqListPushFront(&s, -2);
+	SeqListPushFront(&s, -3);
+	SeqListprint(&s);
+
+	SeqListPopFront(&s);
+	SeqListPopFront(&s);
+	SeqListprint(&s);
+
+
+	int pos = SeqListFind(&s, 5);
+	if (pos != -1)
+	{
+		SeqListErase(&s, pos);
+	}
+
+
+	SeqListDestory(&s);
+}
+int main()
+{
+	TestSeqListl();
+	return 0;
+}

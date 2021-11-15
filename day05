@@ -1,0 +1,178 @@
+*************************************************SList.h
+#pragma once
+
+#include<stdio.h>
+#include<stdlib.h>
+
+typedef int SListDataType;
+//节点
+typedef struct SListNode
+{
+	SListDataType data;
+	struct SListNode* next;
+}SListNode;
+
+//struct SList
+//{
+//	SListNode* head;
+//	SListNode* tail;
+//};
+
+//尾插尾删，头插头删
+void SListPushBack(SListNode** pphead, SListDataType x);
+void SListPopBack(SListNode** pphead);
+void SListPushFront(SListNode* phead, SListDataType x);
+void SListPopFront(SListNode* phead);
+
+//打印
+void SListPrint(SListNode* phead);
+
+
+*************************************************************SList.c
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include"SList.h"
+
+SListNode* BuySListNode(SListDataType x)
+{
+	//插入尾
+	SListNode* newNode = (SListNode*)malloc(sizeof(SListNode));
+	if (newNode == NULL)
+	{
+		printf("申请失败\n");
+		exit(-1);
+	}
+	newNode->data = x;
+	newNode->next = NULL;//要制空，因为不质控是随机值
+	//要把上一个节点的地址变为新加的节点的地址
+
+	return newNode;
+}
+
+//打印链表，打印完要拿到指向下一个地址，才能继续
+void SListPrint(SListNode* phead)
+{
+	SListNode* cur = phead;
+	while (cur != NULL)
+	{
+		printf("%d->", cur->data);
+		cur = cur->next;
+	}
+	printf("NULL");
+}
+
+//尾插 - 申请一块节点出来
+//链表一开始是什么值都不会放的，是空的
+void SListPushBack(SListNode** pphead, SListDataType x)
+{
+	//插入尾
+	SListNode* newNode = BuySListNode(x);
+	if (*pphead == NULL)
+	{
+		*pphead = newNode;
+	}
+	else
+	{
+		//找到尾
+		SListNode* tail = *pphead;
+		while (tail->next != NULL)
+		{
+			tail = tail->next;
+		}
+		
+		tail->next = newNode;
+	}
+}
+
+//尾删
+void SListPopBack(SListNode** pphead)
+{
+	//1.空
+	//2.一个节点
+	//3.一个以上的节点
+	if (*pphead == NULL)
+	{
+		return;
+	}
+	else if ((*pphead)->next == NULL)
+	{
+		free(*pphead);
+		*pphead = NULL;
+	}
+	else
+	{
+		SListNode* prev = NULL;
+		SListNode* tail = *pphead;
+		while (tail->next != NULL);
+		{
+			//单项链表是在最后一个找不到前一个节点，双向链表可以，所以
+			prev = tail;
+			tail = tail->next;
+		}
+		free(tail);
+		prev->next = NULL;
+
+	}
+
+}
+
+
+
+*******************************************************************************day04.c
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include"SList.h"
+
+//顺序表
+//1.可动态增长的数组
+//2.数据在数组中存储时必须是连续的
+// 
+//缺点
+//1.中间或者头部的插入删除很慢，需要挪动数据。时间复杂度是O(N)
+//2.空间不够时，增容会有一定的浪费。
+//
+//优点
+// 1.随机访问
+// 2.缓存命中率比较高的(跟链式结构对比，因为链表物理不是连续的。顺序表是吃了系统预加载的"buff"才高)
+//  cpu访问数据是先要加载缓存，他先看这个地址在不在缓存，不在缓存叫没有命中，在缓存叫命中，命中不与要在内存读，没有命中在内存中读，读了以后放在缓存，再去缓存去读，下一次去读时候不需要在内存中读取在缓存中读取就可以了
+//  因为cpu的算数是非常快的，内存会跟不上，所以有一级L1、二级L2、三级L3缓存。一个比一个大一个比一个慢，但是都比内存块
+//   还有一个寄存器比三级缓存但是他们属于平级的
+//  缓存访问数据的时候先预加载：访问一个数据时不会只加载一个数据到缓存，而是这个数据开始一段数据加载到缓存
+// 加载链式的时候会把要读的一段内存放到缓存中(因为链式物理不是连续的，所以只用一部分，剩下的不用，占着不用污染内存)，然后再去内存中读取到缓存中，直到找完
+//推荐书《深入了解计算机系统》，虽然叫做操作系统，但是讲的是体系 
+//
+
+//链表
+//逻辑上是连续的，物理上是非连续的
+// 链表其实就是针对顺序表的缺点，来设计的，补足的就是顺序表的缺点
+//特点
+// 链表的物理空间是不连续的，每块空间有两部分，一部分存它自己，另一部分存下一个空间的地址，直到最后一个存unll空地址,
+//  就是链表在物理上是一个节点存的下一个节点的地址
+// 这种不浪费空间也不需要增容，要一个给一个
+//缺陷
+// 
+//
+
+//单列表的结构
+int main()
+{
+	SListNode* pList = NULL;
+
+	SListPushBack(&pList,1);
+	SListPushBack(&pList, 2);
+	SListPushBack(&pList, 3);
+	SListPushBack(&pList,4);
+
+	SListPrint(pList);
+
+	SListPopBack(&pList);
+	SListPopBack(&pList);
+	SListPopBack(&pList);
+	SListPopBack(&pList);
+	SListPopBack(&pList);
+
+	SListPrint(pList);
+
+
+	return 0;
+}

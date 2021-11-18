@@ -1,0 +1,361 @@
+*************************************************sLIst.h
+#pragma once
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<assert.h>
+
+typedef int SListDataType;
+//节点
+typedef struct SListNode
+{
+	SListDataType data;
+	struct SListNode* next;
+}SListNode;
+
+//struct SList
+//{
+//	SListNode* head;
+//	SListNode* tail;
+//};
+
+//尾插尾删，头插头删
+//尾插，要加一个节点并且在前一个节点加上指向这个节点的地址
+// 尾删，删调最后一个，并且前一个节点给null指针
+//头插，加一个节点，这个节点指向原来的头
+// 头删,有可能全干掉完了
+void SListPushBack(SListNode** pphead, SListDataType x);
+void SListPopBack(SListNode** pphead);
+void SListPushFront(SListNode** pphead, SListDataType x);
+void SListPopFront(SListNode** pphead);
+
+//查找 - 修改 - 返回的是地址 （不改变东西不用传二级指针）
+SListNode* SListFind(SListNode* plist, SListDataType x);
+
+//随机地方插入
+//线性表大部分都是在头尾操作
+// 中间插入推荐这个数之后插入
+//单链表在pos位置后插入x
+//分析思考为什么不在pos位置之前插入
+void SListInsertAfter(SListNode* pos, SListDataType x);
+
+//单链表删除pos位置后的值
+// 分析思考为什么不删除pos位置？
+void SListEraseAfter(SListNode* pos);
+
+//打印
+void SListPrint(SListNode* phead);
+
+
+
+*****************************************************Slist.c
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include"SList.h"
+
+SListNode* BuySListNode(SListDataType x)
+{
+	//插入尾
+	SListNode* newNode = (SListNode*)malloc(sizeof(SListNode));
+	if (newNode == NULL)
+	{
+		printf("申请失败\n");
+		exit(-1);
+	}
+	newNode->data = x;
+	newNode->next = NULL;//要制空，因为不质控是随机值
+	//要把上一个节点的地址变为新加的节点的地址
+
+	return newNode;
+}
+
+//打印链表，打印完要拿到指向下一个地址，才能继续
+void SListPrint(SListNode* phead)
+{
+	SListNode* cur = phead;
+	while (cur != NULL)
+	{
+		printf("%d->", cur->data);
+		cur = cur->next;
+	}
+	printf("NULL\n");
+}
+
+//尾插 - 申请一块节点出来
+//链表一开始是什么值都不会放的，是空的
+void SListPushBack(SListNode** pphead, SListDataType x)
+{
+	//插入尾
+	SListNode* newNode = BuySListNode(x);
+	if (*pphead == NULL)
+	{
+		*pphead = newNode;
+	}
+	else
+	{
+		//找到尾
+		SListNode* tail = *pphead;
+		while (tail->next != NULL)
+		{
+			tail = tail->next;
+		}
+		
+		tail->next = newNode;
+	}
+}
+
+//尾删
+void SListPopBack(SListNode** pphead)
+{
+	//1.空
+	if (*pphead == NULL)
+	{
+		return;
+	}
+	//2.一个节点
+	else if ((*pphead)->next == NULL)
+	{
+		free(*pphead);
+		*pphead = NULL;
+	}
+	//3.一个以上的节点
+	else
+	{
+		SListNode* prev = NULL;
+		SListNode* tail = *pphead;
+		while (tail->next != NULL)
+		{
+			//单项链表是在最后一个找不到前一个节点，双向链表可以，所以
+			prev = tail;
+			tail = tail->next;
+		}
+		free(tail);
+		prev->next = NULL;
+	}
+}
+
+//头插
+void SListPushFront(SListNode** pphead, SListDataType x)
+{
+	SListNode* newnode = BuySListNode(x);
+	newnode->next = *pphead;
+	*pphead = newnode;
+}
+
+//头删
+// ferr释放指针指向的内存，释放完后会给这块空间赋上随机值
+// 释放完后指向的空间是随机值，所以找不到下一个节点，所以释放完后要保存下一个节点的地址，释放完下一个节点地址在释放指向的指针
+//2种
+// 1.指向下一个地址释放上一个地址
+// 2.释放完后保存下一个节点地址，释放完下一个地址，在释放
+//
+//用的是第一种
+void SListPopFront(SListNode** pphead)
+{
+	//1.空
+	if (*pphead == NULL)
+	{
+		return;
+	}
+	//2.一个节点+3.一个以上的节点
+	else
+	{
+		SListNode* next = (*pphead)->next;
+		free(*pphead);
+		*pphead = next;
+	}
+}
+
+//查找
+SListNode* SListFind(SListNode* phead, SListDataType x)
+{
+	SListNode* cur = phead;
+	while (cur)
+	{
+		if (cur->data == x)
+		{
+			return cur;
+		}
+		cur = cur->next;
+	}
+	return NULL;
+}
+
+//插入之后插入
+void SListInsertAfter(SListNode* pos, SListDataType x)
+{
+	assert(pos);
+	SListNode* newnode = BuySListNode(x);
+	newnode->next = pos->next;
+	pos->next = newnode;
+}
+//是否插入之后要删除
+void SListEraseAfter(SListNode* pos)
+{
+	assert(pos);
+	if (pos->next != NULL)
+	{
+		SListNode* next = pos->next;
+		SListNode* nextnext = next->next;
+		pos->next = nextnext;
+		free(next);
+	}
+
+}
+
+
+
+****************************************************************day06
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include"SList.h"
+
+SListNode* BuySListNode(SListDataType x)
+{
+	//插入尾
+	SListNode* newNode = (SListNode*)malloc(sizeof(SListNode));
+	if (newNode == NULL)
+	{
+		printf("申请失败\n");
+		exit(-1);
+	}
+	newNode->data = x;
+	newNode->next = NULL;//要制空，因为不质控是随机值
+	//要把上一个节点的地址变为新加的节点的地址
+
+	return newNode;
+}
+
+//打印链表，打印完要拿到指向下一个地址，才能继续
+void SListPrint(SListNode* phead)
+{
+	SListNode* cur = phead;
+	while (cur != NULL)
+	{
+		printf("%d->", cur->data);
+		cur = cur->next;
+	}
+	printf("NULL\n");
+}
+
+//尾插 - 申请一块节点出来
+//链表一开始是什么值都不会放的，是空的
+void SListPushBack(SListNode** pphead, SListDataType x)
+{
+	//插入尾
+	SListNode* newNode = BuySListNode(x);
+	if (*pphead == NULL)
+	{
+		*pphead = newNode;
+	}
+	else
+	{
+		//找到尾
+		SListNode* tail = *pphead;
+		while (tail->next != NULL)
+		{
+			tail = tail->next;
+		}
+		
+		tail->next = newNode;
+	}
+}
+
+//尾删
+void SListPopBack(SListNode** pphead)
+{
+	//1.空
+	if (*pphead == NULL)
+	{
+		return;
+	}
+	//2.一个节点
+	else if ((*pphead)->next == NULL)
+	{
+		free(*pphead);
+		*pphead = NULL;
+	}
+	//3.一个以上的节点
+	else
+	{
+		SListNode* prev = NULL;
+		SListNode* tail = *pphead;
+		while (tail->next != NULL)
+		{
+			//单项链表是在最后一个找不到前一个节点，双向链表可以，所以
+			prev = tail;
+			tail = tail->next;
+		}
+		free(tail);
+		prev->next = NULL;
+	}
+}
+
+//头插
+void SListPushFront(SListNode** pphead, SListDataType x)
+{
+	SListNode* newnode = BuySListNode(x);
+	newnode->next = *pphead;
+	*pphead = newnode;
+}
+
+//头删
+// ferr释放指针指向的内存，释放完后会给这块空间赋上随机值
+// 释放完后指向的空间是随机值，所以找不到下一个节点，所以释放完后要保存下一个节点的地址，释放完下一个节点地址在释放指向的指针
+//2种
+// 1.指向下一个地址释放上一个地址
+// 2.释放完后保存下一个节点地址，释放完下一个地址，在释放
+//
+//用的是第一种
+void SListPopFront(SListNode** pphead)
+{
+	//1.空
+	if (*pphead == NULL)
+	{
+		return;
+	}
+	//2.一个节点+3.一个以上的节点
+	else
+	{
+		SListNode* next = (*pphead)->next;
+		free(*pphead);
+		*pphead = next;
+	}
+}
+
+//查找
+SListNode* SListFind(SListNode* phead, SListDataType x)
+{
+	SListNode* cur = phead;
+	while (cur)
+	{
+		if (cur->data == x)
+		{
+			return cur;
+		}
+		cur = cur->next;
+	}
+	return NULL;
+}
+
+//插入之后插入
+void SListInsertAfter(SListNode* pos, SListDataType x)
+{
+	assert(pos);
+	SListNode* newnode = BuySListNode(x);
+	newnode->next = pos->next;
+	pos->next = newnode;
+}
+//是否插入之后要删除
+void SListEraseAfter(SListNode* pos)
+{
+	assert(pos);
+	if (pos->next != NULL)
+	{
+		SListNode* next = pos->next;
+		SListNode* nextnext = next->next;
+		pos->next = nextnext;
+		free(next);
+	}
+
+}

@@ -1,0 +1,286 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include<stdio.h>
+#include<stdlib.h>
+
+//反转单链表
+// 三个指针反转(1.空，2.第一个next， 3.下一个地址)
+//  下一个(1.第一个next， 2.第二个next，下一个地址)就是第一个指向空，第二个指向第一个地址，第三个指向
+// 头插法思路解决
+//leetcode题目
+
+///**
+// * Definition for singly-linked list.
+// * struct ListNode {
+// *     int val;
+// *     struct ListNode *next;
+// * };
+// */
+//struct ListNode* reverseList(struct ListNode* head) {
+//    if (head == NULL || head->next == NULL)
+//    {
+//        return head;
+//    }
+//    struct ListNode* n1 = NULL, * n2 = head, * n3 = head->next;
+//    while (n2)
+//    {
+//        //从这里开始第一个n1指向的地址为空
+//        n2->next = n1;
+//
+//        n1 = n2;
+//        n2 = n3;
+//        if (n3)
+//        {
+//            n3 = n2->next;
+//        }
+//    }
+//    return n1;
+//}
+
+//移除链表元素
+//包括测试oj
+// struct ListNode {
+//    int val;
+//    struct ListNode *next;
+//};
+// 
+//
+//typedef struct ListNode Node;
+//struct ListNode* removeElements(struct ListNode* head, int val) {
+//    Node* prev = NULL, * cur = head;
+//    while (cur)
+//    {
+//        if (cur->val = val)
+//        {
+//            //if(cur == NULL)
+//            if (cur == head)
+//            {
+//                head = cur->next;
+//                free(cur);
+//                cur = head;
+//            }
+//            else
+//            {
+//                prev->next = cur->next;
+//                free(cur);
+//                cur = prev->next;
+//            }
+//
+//        }
+//        else
+//        {
+//            prev = cur;
+//            cur = cur->next;
+//        }
+//    }
+//
+//    return head;
+//}
+//
+////测试oj
+//int main()
+//{
+//    Node* n1 = (Node*)malloc(sizeof(Node));
+//    n1->val = 6;
+//    Node* n2 = (Node*)malloc(sizeof(Node));
+//    n2->val = 1;
+//    Node* n3 = (Node*)malloc(sizeof(Node));
+//    n3->val = 2;
+//    Node* n4 = (Node*)malloc(sizeof(Node));
+//    n4->val = 6;
+//
+//    n1->next = n2;
+//    n2->next = n3;
+//    n3->next = n4;
+//    n4->next = NULL;
+//
+//    Node* head = removeElements(n1, 6);
+//
+//    return 0;
+//}
+
+//返回链表的中间节点，如果有两个返回第二个节点
+//快慢指针 - 双指针
+// 快指针一次走两步
+// 慢指针一次走一步
+///**
+// * Definition for singly-linked list.
+// * struct ListNode {
+// *     int val;
+// *     struct ListNode *next;
+// * };
+// */
+//
+//
+//struct ListNode* middleNode(struct ListNode* head) {
+//    struct ListNode* slow = head;
+//    struct ListNode* fast = head;
+//    while (fast && fast->next)
+//    {
+//        slow = slow->next;
+//        fast = fast->next->next;
+//    }
+//    return slow;
+//}
+
+//输出一个链表，输出该链表中倒数第k个点
+//遍历两次 - 第一次求出有多少数n，然后下n-k。
+//遍历一次，双指针
+///**
+// * struct ListNode {
+// *	int val;
+// *	struct ListNode *next;
+// * };
+// *
+// * C语言声明定义全局变量请加上static，防止重复定义
+// */
+// /**
+//  * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+//  *
+//  *
+//  * @param pHead ListNode类
+//  * @param k int整型
+//  * @return ListNode类
+//  */
+//struct ListNode* FindKthToTail(struct ListNode* pHead, int k) {
+//    // write code here
+//    struct ListNode* fast = pHead;
+//    struct ListNode* slow = pHead;
+//
+//    while (k--)
+//    {
+//        if (fast)
+//        {
+//            fast = fast->next;
+//        }
+//        else
+//        {
+//            return NULL;
+//        }
+//    }
+//    while (fast)
+//    {
+//        slow = slow->next;
+//        fast = fast->next;
+//    }
+//    return slow;
+//}
+
+//合并两个有序的链表
+//取小的下来尾插
+// 其中一个为空结束，把另一个不为空的尾插
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     struct ListNode *next;
+ * };
+ */
+//typedef struct ListNode Node;
+//struct ListNode* mergeTwoLists(struct ListNode* l1, struct ListNode* l2)
+//{
+//    if (l1 == NULL)
+//    {
+//        return l2;
+//    }
+//    if (l2 == NULL)
+//    {
+//        return l1;
+//    }
+//    Node* head = NULL, * taile = NULL;
+//    if (l1->val < l2->val)
+//    {
+//        head = taile = l1;
+//        l1 = l1->next;
+//    }
+//    else
+//    {
+//        head = taile = l2;
+//        l2 = l2->next;
+//    }
+//
+//    //取小的尾插
+//    while (l1 && l2)
+//    {
+//        if (l1->val < l2->val)
+//        {
+//            taile->next = l1;
+//            l1 = l1->next;
+//        }
+//        else
+//        {
+//            taile->next = l2;
+//            l2 = l2->next;
+//        }
+//        taile = taile->next;
+//    }
+//
+//    if (l1)
+//    {
+//        taile->next = l1;
+//    }
+//    else
+//    {
+//        taile->next = l2;
+//    }
+//    return head;
+//}
+
+//2.0版本
+//带哨兵位的，不存储有效数据，方便尾插
+///**
+// * Definition for singly-linked list.
+// * struct ListNode {
+// *     int val;
+// *     struct ListNode *next;
+// * };
+// */
+//typedef struct ListNode Node;
+//struct ListNode* mergeTwoLists(struct ListNode* l1, struct ListNode* l2)
+//{
+//    if (l1 == NULL)
+//    {
+//        return l2;
+//    }
+//    if (l2 == NULL)
+//    {
+//        return l1;
+//    }
+//    Node* head = NULL, * taile = NULL;
+//    //带烧饼位的头节点，不存储有效数据
+//    head = taile = malloc(sizeof(Node));
+//
+//    //取小的尾插
+//    while (l1 && l2)
+//    {
+//        if (l1->val < l2->val)
+//        {
+//            taile->next = l1;
+//            l1 = l1->next;
+//        }
+//        else
+//        {
+//            taile->next = l2;
+//            l2 = l2->next;
+//        }
+//        taile = taile->next;
+//    }
+//
+//    if (l1)
+//    {
+//        taile->next = l1;
+//    }
+//    else
+//    {
+//        taile->next = l2;
+//    }
+//    //return head;
+//    Node* realHead = head->next;
+//    free(head);
+//
+//    return realHead;
+//}
+
+//链表分割
+//保持相对顺序
+//

@@ -140,3 +140,70 @@
 //}
 
 //删除链表中重复的节点
+//思路：三个指针，一个记录前一个节点指针(prev)，两个比较相同(cur next)。如果prev记录前一个节点的指针位置,cur和next ferr掉后往后移动如果不一样prev改成这个元素的地址，next为空结束
+/**
+ * struct ListNode {
+ *	int val;
+ *	struct ListNode *next;
+ * };
+ *
+ * C语言声明定义全局变量请加上static，防止重复定义
+ */
+ /**
+  * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+  *
+  *
+  * @param pHead ListNode类
+  * @return ListNode类
+  */
+typedef struct ListNode Node;
+struct ListNode* deleteDuplication(struct ListNode* pHead)
+{
+    // write code here
+    if (pHead == NULL || pHead->next == NULL)
+    {
+        return pHead;
+    }
+    Node* prev = NULL;
+    Node* cur = pHead;
+    Node* next = cur->next;
+
+    while (next)
+    {
+        if (cur->val != next->val)
+        {
+            prev = cur;
+            cur = next;
+            next = next->next;
+        }
+        else
+        {
+            while (next && cur->val == next->val)
+            {
+                next = next->next;
+            }
+
+            if (prev)
+            {
+                prev->next = next;
+            }
+            else
+            {
+                pHead = next;
+            }
+
+            //释放
+            while (cur != next)
+            {
+                Node* del = cur;
+                cur = cur->next;
+                free(del);
+            }
+            if (next)
+            {
+                next = cur->next;
+            }
+        }
+    }
+    return pHead;
+}

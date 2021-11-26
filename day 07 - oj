@@ -1,0 +1,48 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+
+//链表分割,不能改变原来的数据顺序
+// 思路：开个哨兵位的头结点(不存任何数据)
+/*
+struct ListNode {
+    int val;
+    struct ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};*/
+typedef struct ListNode ListNode;
+class Partition {
+public:
+    ListNode* partition(ListNode* pHead, int x) {
+        // write code here
+        ListNode* lessHead, * lessTail;
+        ListNode* greaterHead, * greaterTail;
+        lessHead = lessTail = (ListNode*)malloc(sizeof(ListNode));
+        greaterHead = greaterTail = (ListNode*)malloc(sizeof(ListNode));
+        lessHead->next = greaterHead->next = NULL;
+
+        ListNode* cur = pHead;
+        while (cur)
+        {
+            if (cur->val < x)
+            {
+                lessTail->next = cur;
+                lessTail = lessTail->next;
+            }
+            else
+            {
+                greaterTail->next = cur;
+                greaterTail = greaterTail->next;
+            }
+            cur = cur->next;
+        }
+
+        lessTail->next = greaterHead->next;
+        greaterTail->next = NULL;
+
+        ListNode* aaa = lessHead->next;
+        free(lessHead);
+        free(greaterHead);
+
+        return aaa;
+
+    }
+};

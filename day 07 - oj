@@ -8,41 +8,105 @@ struct ListNode {
     struct ListNode *next;
     ListNode(int x) : val(x), next(NULL) {}
 };*/
-typedef struct ListNode ListNode;
-class Partition {
-public:
-    ListNode* partition(ListNode* pHead, int x) {
-        // write code here
-        ListNode* lessHead, * lessTail;
-        ListNode* greaterHead, * greaterTail;
-        lessHead = lessTail = (ListNode*)malloc(sizeof(ListNode));
-        greaterHead = greaterTail = (ListNode*)malloc(sizeof(ListNode));
-        lessHead->next = greaterHead->next = NULL;
+//typedef struct ListNode ListNode;
+//class Partition {
+//public:
+//    ListNode* partition(ListNode* pHead, int x) {
+//        // write code here
+//        ListNode* lessHead, * lessTail;
+//        ListNode* greaterHead, * greaterTail;
+//        lessHead = lessTail = (ListNode*)malloc(sizeof(ListNode));
+//        greaterHead = greaterTail = (ListNode*)malloc(sizeof(ListNode));
+//        lessHead->next = greaterHead->next = NULL;
+//
+//        ListNode* cur = pHead;
+//        while (cur)
+//        {
+//            if (cur->val < x)
+//            {
+//                lessTail->next = cur;
+//                lessTail = lessTail->next;
+//            }
+//            else
+//            {
+//                greaterTail->next = cur;
+//                greaterTail = greaterTail->next;
+//            }
+//            cur = cur->next;
+//        }
+//
+//        lessTail->next = greaterHead->next;
+//        greaterTail->next = NULL;
+//
+//        ListNode* aaa = lessHead->next;
+//        free(lessHead);
+//        free(greaterHead);
+//
+//        return aaa;
+//
+//    }
+//};
 
-        ListNode* cur = pHead;
-        while (cur)
+//链表的回文结构(两边的val是一样的)
+// 单链表只能正着走，不能倒着走
+// 思路：先吧链表中后半段的元素拿出来逆序一下，看是否一样(快慢指针，快的要么走到尾，要么走到空结束)
+/*
+struct ListNode {
+    int val;
+    struct ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};*/
+class PalindromeList {
+public:
+    struct ListNode* reverseList(struct ListNode* head) {
+        if (head == NULL || head->next == NULL)
         {
-            if (cur->val < x)
+            return head;
+        }
+        struct ListNode* n1 = NULL, * n2 = head, * n3 = head->next;
+        while (n2)
+        {
+            //从这里开始第一个n1指向的地址为空
+            n2->next = n1;
+
+            n1 = n2;
+            n2 = n3;
+            if (n3)
             {
-                lessTail->next = cur;
-                lessTail = lessTail->next;
+                n3 = n2->next;
+            }
+        }
+        return n1;
+    }
+    bool chkPalindrome(ListNode* A) {
+        // write code here
+        ListNode* fast = A;
+        ListNode* slow = A;
+        ListNode* prev = NULL;
+
+        while (fast && fast->next)
+        {
+            prev = slow;
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+
+        prev->next = NULL;
+
+        slow = reverseList(slow);
+
+        while (A)
+        {
+            if (A->val != slow->val)
+            {
+                return false;
             }
             else
             {
-                greaterTail->next = cur;
-                greaterTail = greaterTail->next;
+                A = A->next;
+                slow = slow->next;
             }
-            cur = cur->next;
         }
-
-        lessTail->next = greaterHead->next;
-        greaterTail->next = NULL;
-
-        ListNode* aaa = lessHead->next;
-        free(lessHead);
-        free(greaterHead);
-
-        return aaa;
-
+        return true;
     }
 };

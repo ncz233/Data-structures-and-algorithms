@@ -56,57 +56,117 @@ struct ListNode {
     struct ListNode *next;
     ListNode(int x) : val(x), next(NULL) {}
 };*/
-class PalindromeList {
-public:
-    struct ListNode* reverseList(struct ListNode* head) {
-        if (head == NULL || head->next == NULL)
-        {
-            return head;
-        }
-        struct ListNode* n1 = NULL, * n2 = head, * n3 = head->next;
-        while (n2)
-        {
-            //从这里开始第一个n1指向的地址为空
-            n2->next = n1;
+//class PalindromeList {
+//public:
+//    struct ListNode* reverseList(struct ListNode* head) {
+//        if (head == NULL || head->next == NULL)
+//        {
+//            return head;
+//        }
+//        struct ListNode* n1 = NULL, * n2 = head, * n3 = head->next;
+//        while (n2)
+//        {
+//            //从这里开始第一个n1指向的地址为空
+//            n2->next = n1;
+//
+//            n1 = n2;
+//            n2 = n3;
+//            if (n3)
+//            {
+//                n3 = n2->next;
+//            }
+//        }
+//        return n1;
+//    }
+//    bool chkPalindrome(ListNode* A) {
+//        // write code here
+//        ListNode* fast = A;
+//        ListNode* slow = A;
+//        ListNode* prev = NULL;
+//
+//        while (fast && fast->next)
+//        {
+//            prev = slow;
+//            slow = slow->next;
+//            fast = fast->next->next;
+//        }
+//
+//        prev->next = NULL;
+//
+//        slow = reverseList(slow);
+//
+//        while (A)
+//        {
+//            if (A->val != slow->val)
+//            {
+//                return false;
+//            }
+//            else
+//            {
+//                A = A->next;
+//                slow = slow->next;
+//            }
+//        }
+//        return true;
+//    }
+//};
 
-            n1 = n2;
-            n2 = n3;
-            if (n3)
-            {
-                n3 = n2->next;
-            }
-        }
-        return n1;
+//相交链表：两个结点可以指向一个结点(一个结点不可以指向两个结点)
+//如果判断连个链表是否相交，看最后一个结点是否已一样
+// 思路：要用结点的地址去比。用两个链表La和Lb,先让两个链表长度相同在比较。
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     struct ListNode *next;
+ * };
+ */
+typedef struct ListNode ListNode;
+//先让两个链表长度相同在比较
+struct ListNode* getIntersectionNode(struct ListNode* headA, struct ListNode* headB) {
+    ListNode* curA = headA;
+    ListNode* curB = headB;
+    //la走
+    int la = 0;
+    while (curA)
+    {
+        ++la;
+        curA = curA->next;
     }
-    bool chkPalindrome(ListNode* A) {
-        // write code here
-        ListNode* fast = A;
-        ListNode* slow = A;
-        ListNode* prev = NULL;
-
-        while (fast && fast->next)
-        {
-            prev = slow;
-            slow = slow->next;
-            fast = fast->next->next;
-        }
-
-        prev->next = NULL;
-
-        slow = reverseList(slow);
-
-        while (A)
-        {
-            if (A->val != slow->val)
-            {
-                return false;
-            }
-            else
-            {
-                A = A->next;
-                slow = slow->next;
-            }
-        }
-        return true;
+    //lb走
+    int lb = 0;
+    while (curB)
+    {
+        ++lb;
+        curB = curB->next;
     }
-};
+    //比较长短
+    ListNode* longList = headA;
+    ListNode* shortList = headB;
+    if (lb > la)
+    {
+        longList = headB;
+        shortList = headA;
+    }
+    //abs是C库函数中的绝对值
+    int gap = abs(la - lb);
+    //长的先走多少步和短的一样长
+    while (gap--)
+    {
+        longList = longList->next;
+    }
+    //两个一样长的随便哪一个为准.(三种可能全一样，不全一样，不一样)
+    while (shortList)
+    {
+        //全一样
+        if (longList == shortList)
+        {
+            return longList;
+        }
+        //不全一样
+        longList = longList->next;
+        shortList = shortList->next;
+    }
+    //不一样
+    return NULL;
+}

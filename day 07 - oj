@@ -121,52 +121,86 @@ struct ListNode {
  *     struct ListNode *next;
  * };
  */
-typedef struct ListNode ListNode;
-//先让两个链表长度相同在比较
-struct ListNode* getIntersectionNode(struct ListNode* headA, struct ListNode* headB) {
-    ListNode* curA = headA;
-    ListNode* curB = headB;
-    //la走
-    int la = 0;
-    while (curA)
-    {
-        ++la;
-        curA = curA->next;
-    }
-    //lb走
-    int lb = 0;
-    while (curB)
-    {
-        ++lb;
-        curB = curB->next;
-    }
-    //比较长短
-    ListNode* longList = headA;
-    ListNode* shortList = headB;
-    if (lb > la)
-    {
-        longList = headB;
-        shortList = headA;
-    }
-    //abs是C库函数中的绝对值
-    int gap = abs(la - lb);
-    //长的先走多少步和短的一样长
-    while (gap--)
-    {
-        longList = longList->next;
-    }
-    //两个一样长的随便哪一个为准.(三种可能全一样，不全一样，不一样)
-    while (shortList)
-    {
-        //全一样
-        if (longList == shortList)
-        {
-            return longList;
-        }
-        //不全一样
-        longList = longList->next;
-        shortList = shortList->next;
-    }
-    //不一样
-    return NULL;
-}
+//typedef struct ListNode ListNode;
+////先让两个链表长度相同在比较
+//struct ListNode* getIntersectionNode(struct ListNode* headA, struct ListNode* headB) {
+//    ListNode* curA = headA;
+//    ListNode* curB = headB;
+//    //la走
+//    int la = 0;
+//    while (curA)
+//    {
+//        ++la;
+//        curA = curA->next;
+//    }
+//    //lb走
+//    int lb = 0;
+//    while (curB)
+//    {
+//        ++lb;
+//        curB = curB->next;
+//    }
+//    //比较长短
+//    ListNode* longList = headA;
+//    ListNode* shortList = headB;
+//    if (lb > la)
+//    {
+//        longList = headB;
+//        shortList = headA;
+//    }
+//    //abs是C库函数中的绝对值
+//    int gap = abs(la - lb);
+//    //长的先走多少步和短的一样长
+//    while (gap--)
+//    {
+//        longList = longList->next;
+//    }
+//    //两个一样长的随便哪一个为准.(三种可能全一样，不全一样，不一样)
+//    while (shortList)
+//    {
+//        //全一样
+//        if (longList == shortList)
+//        {
+//            return longList;
+//        }
+//        //不全一样
+//        longList = longList->next;
+//        shortList = shortList->next;
+//    }
+//    //不一样
+//    return NULL;
+//}
+
+//循环链表
+//判断是否循环
+//思路：快慢指针
+///**
+// * Definition for singly-linked list.
+// * struct ListNode {
+// *     int val;
+// *     struct ListNode *next;
+// * };
+// */
+//bool hasCycle(struct ListNode* head) {
+//    //快慢指针，相同是循环
+//    struct ListNode* slow = head;
+//    struct ListNode* fast = head;
+//    while (fast && fast->next)
+//    {
+//        slow = slow->next;
+//        fast = fast->next->next;
+//
+//        if (slow == fast)
+//        {
+//            return true;
+//        }
+//    }
+//    return false;
+//}
+//证明快中子是如何追上慢指针的？
+// 画图去
+//如果慢指针走一步，快指针走三部行不行？四步呢？n步呢？
+//不行。因为快指针走两步是与慢指针走一步在逐渐-1的，1的倍数是所有数，所以可以。如果快指针走三步慢指针还是走一步，相差的距离是-2，2的倍数不是所有数
+// 得出：快指针走3步是与慢指针走一步的情况下，之间相差的距离是X,X-2,X-4，如果X是奇数，不相遇。错过之后，再算距离X还是基数，就会导致下次还是错过
+//  如果极端情况下每次差距都是奇数，就一直错过，无法相遇。死循环
+//   一次走N步，类似的道理

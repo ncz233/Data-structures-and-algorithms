@@ -204,3 +204,57 @@ struct ListNode {
 // 得出：快指针走3步是与慢指针走一步的情况下，之间相差的距离是X,X-2,X-4，如果X是奇数，不相遇。错过之后，再算距离X还是基数，就会导致下次还是错过
 //  如果极端情况下每次差距都是奇数，就一直错过，无法相遇。死循环
 //   一次走N步，类似的道理
+
+//环形链表2
+//返回入环的第一个点
+//思路1：写起来麻烦，理解起来容易。快慢指针，走的时候一定会相遇，那个点叫相遇点，断开(一个当头一个当尾，尾要指向空就行了)，这个时候就转换成了求两个链表的交点
+//思路2：写起来简单，但是需要公式证明，理解要复杂。先分成3段
+/* 第一段是起点到入环第一个点假设L
+   第二段是入环的第一个点到相遇点假设X(对这个也是需要快慢指针来算的)
+   第三段是环的周长假设C*/
+//  慢指针走了L+X(慢指针不可能在环内走了一圈)，快指针L+X+C
+//   因为快指针比慢指针快2倍，得出等式2*(L+X)=L+X+C，所以L+X=C，转换L=C-X
+//    然后用两个指针，一个在起点，一个在相遇点(相遇点向前走(难道单链表还能往后走吗))，一起走直到相同为止，这个数就是入环的第一个点
+// 如果链表特别长，环形特别短，那上面的推论是错误的，但是它的结论是对的
+// 真正的慢指针是L+X
+// 快指针是L+N*C+X(N代表在环内走了几圈)
+//  得出等式2*(L+X)=L+N*C+X，所以L+X=N*C，转换L=N*C-X
+//   只知道C(环)的长度(从相遇点走后在遇到相遇点)，从相遇点开走N*C-X最后走到是环的开始点。又因为L=N*C-X，所以用两个指针，一个在起点，一个在相遇点，一起走直到相同为止，这个数就是入环的第一个点
+// 所以为什么说它是结论是对的呢
+//用第二种思路
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     struct ListNode *next;
+ * };
+ */
+struct ListNode* detectCycle(struct ListNode* head) {
+    struct ListNode* slow, * fast;
+    slow = fast = head;
+    //找相遇点
+    while (fast && fast->next)
+    {
+
+        slow = slow->next;
+        fast = fast->next->next;
+        //找到相遇点跳出去(不能一上来判断，因为快慢指针一开始是相同的)
+        if (fast == slow)
+        {
+            break;
+        }
+    }
+    //如果fast与slow不相同就是没找到相遇点也就是没有环。
+    if (fast == NULL || fast->next == NULL)
+    {
+        return NULL;
+    }
+    //找环的开始点
+    struct ListNode* meet = fast;
+    while (head != meet)
+    {
+        head = head->next;
+        meet = meet->next;
+    }
+    return head;
+}

@@ -1,0 +1,346 @@
+============================================================================list.h
+#pragma once
+#include<stdio.h>
+#include<assert.h>
+#include<stdlib.h>
+
+typedef int LTDataType;
+
+typedef struct ListNode
+{
+	struct ListNode* next;
+	struct ListNode* prev;
+	LTDataType data;
+}ListNode;
+
+//初始化(第一种二级指针，第二种返回指针)
+//void ListInit(ListNode** pphead);
+ListNode* ListInit();//***
+//给一个值创建一个结点，并返回指针
+ListNode* BuyListNode(LTDataType x);
+//打印(不能是头结点，因为头节点是哨兵位，不存储有效数据，所以是下一个结点，直到打印到头节点就是带哨兵位的时候停止打印就行了)
+void ListPrint(ListNode* phead);
+
+//***
+//尾插
+void ListPushBack(ListNode* phead, LTDataType x);
+//尾删
+void ListPopBack(ListNode* phead);
+//头插
+void ListPushFront(ListNode* phead, LTDataType x);
+//头删
+void ListPopFront(ListNode* phead);
+
+//查找&&修改(顺序表是返回下标，链表是返回这个结点的指针，都返回指针了可以修改了)，但更重要的是辅助下面的随机插与删
+ListNode* ListFind(ListNode* phead, LTDataType x);
+//随意地方插入(一般在pos前插入)
+void ListInsert(ListNode* pos, LTDataType x);//***
+//随机地方去删除
+void ListErase(ListNode* pos);//***
+//清除链表
+void ListClear(ListNode* phead);
+//最后销毁这张链表
+void ListDestory(ListNode** pphead);
+
+
+
+==============================================================================list.c
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include"list.h"
+
+//初始化
+//void ListInit(ListNode** pphead)
+//{
+//	(*pphead) = BuyListNode(0);
+//	(*pphead)->next = *pphead;
+//	(*pphead)->prev = *pphead;
+//}
+ListNode* ListInit()
+{
+	ListNode* phead = BuyListNode(0);
+	phead->next = phead;
+	phead->prev = phead;
+
+	return phead;
+}
+
+//清除链表(清理所有的数据节点，保留头节点，可以继续使用)
+void ListClear(ListNode* phead)
+{
+	assert(phead);
+	ListNode* cur = phead->next;
+	while (cur != phead)
+	{
+		ListNode* next = cur->next;
+		free(cur);
+		cur = next;
+	}
+	phead->prev = phead;
+	phead->next = phead;
+}
+
+//销毁这张链表
+void ListDestory(ListNode** pphead)
+{
+	//2中方法，1.保存下一个删它，2.保存它自己，保存这个位置下面走
+	//第1种
+	assert(*pphead);
+
+	ListClear(*pphead);
+	free(*pphead);
+	*pphead = NULL;//这里是不行的，这是值复制了过去，所以要传二级指针，或者返回指针。而这个地方期望是把传过去的指针给改了。所以二级指针把
+}
+
+//创建一个结点
+ListNode* BuyListNode(LTDataType x)
+{
+	ListNode* node = (ListNode*)malloc(sizeof(ListNode));
+	//C语言除了静态变量和全局变量，不初始化会产生随机值
+	node->next = NULL;
+	node->prev = NULL;
+	node->data = x;
+	return node;
+}
+
+//打印
+void ListPrint(ListNode* phead)
+{
+	assert(phead);
+	ListNode* cur = phead->next;
+	while (cur != phead)
+	{
+		printf("%d ", cur->data);
+		cur = cur->next;
+	}
+	printf("\n");
+}
+
+//尾插
+void ListPushBack(ListNode* phead, LTDataType x)
+{
+	//assert(phead);
+
+	//ListNode* tail = phead->prev;
+	//ListNode* newnode = BuyListNode(x);//这个BuyListNode是增加结点
+	//// phead ... tail newnode
+
+	//tail->next = newnode;
+	//newnode->prev = tail;
+
+	//newnode->next = phead;
+	//phead->prev = newnode;
+
+	ListInsert(phead, x);
+}
+
+//尾删
+void ListPopBack(ListNode* phead)
+{
+	//assert(phead);
+	//assert(phead->next != phead);
+
+	//ListNode* cur = phead->prev;
+	//ListNode* tail = cur->prev;
+	//phead->prev = tail;
+	//tail->next = phead;
+	//free(cur);
+	//cur = NULL; //可以不写(但养成良好的习惯，写!)，因为这里是局部变量，局部变量出去就会销毁，所以出去之后就不可能访问cur了。cur 不置 NULL，再次访问会程序会崩溃因为是野指针。
+	ListErase(phead->prev);
+}
+
+//头插
+void ListPushFront(ListNode* phead, LTDataType x)
+{
+	//assert(phead);
+	//ListNode* first = phead->next;
+	//ListNode* newnode = BuyListNode(x);
+	////if (first == phead)
+	////{
+	////	phead->next = newnode;
+	////	newnode->prev = phead;
+	////	phead->prev = newnode;
+	////	newnode->next = phead;
+	////} //是我考虑太多了，忘了下面的first是phead了。所以为什么说双向链表是完整的，因为是太完全所以不怎么会考
+	//phead->next = newnode;
+	//newnode->prev = phead;
+	//newnode->next = first;
+	//first->prev = newnode;
+
+	ListInsert(phead->next, x);
+}
+
+//头删
+void ListPopFront(ListNode* phead)
+{
+	//assert(phead);
+	//assert(phead->next != phead);
+
+	//ListNode* fisrt = phead->next;
+	//ListNode* second = fisrt->next;
+	////phead  fisrt  second
+	////if (tail == phead)
+	////{
+	////	phead->next = phead;
+	////	phead->prev = phead;
+	////	free(cur);
+	////	cur = NULL;
+	////} //这个也是考虑太多了。双向链表太过于完全，很少考
+	//phead->next = second;
+	//second->prev = phead;
+	//free(fisrt);
+	//fisrt = NULL;
+	ListErase(phead->next);
+
+}
+
+//查找&&修改
+ListNode* ListFind(ListNode* phead, LTDataType x)
+{
+	assert(phead);
+	ListNode* cur = phead->next;
+	while (cur != phead)
+	{
+		if (cur->data == x)
+		{
+			return cur;
+		}
+		cur = cur->next;
+	}
+	return NULL;
+}
+//随意地方插入(一般在pos前插入)
+void ListInsert(ListNode* pos, LTDataType x/*, LTDataType y*/)
+{
+	assert(pos);
+	//pos = ListFind(pos, x);
+	//if (pos == NULL)
+	//{
+	//	return;
+	//} //这样写会把代码写死了
+	ListNode* newnode = BuyListNode(x);
+	ListNode* posPrev = pos->prev;
+
+	posPrev->next = newnode;
+	newnode->prev = posPrev;
+	newnode->next = pos;
+	pos->prev = newnode;
+
+}
+//随机地方去删除
+void ListErase(ListNode* pos)
+{
+	assert(pos);
+	//assert(pos != phead); //判断这个还要传phead过来，不判断了
+
+	ListNode* posNext = pos->next;
+	ListNode* posPrev = pos->prev;
+
+	posPrev->next = posNext;
+	posNext->prev = posPrev;
+	free(pos);
+	pos = NULL;
+}
+
+
+
+===============================================================================================day08.c
+#define _CRT_SECURE_NO_WARNINGS 1
+#include"list.h"
+//双向链表
+//链表有8种，单节点中有单项、双项
+// 带头、不带头(哨兵位的头节点，不存储有效数据(尾插尾删比较方便))
+// 循环、非循环
+//  两三相结合，比如单项带头循环，单项不带头循环
+
+// 而我们常见的单链表是单项不带头不循环(oj题，机本不会单独最为链表使用，使用的角度可能作为其他数据结构的子结构或一部分)
+// 那双向链表是双项带头循环(作为链表使用，STL中list就是这种结构(C++标准库里面STL),),虽然结构复杂，但是操作简单
+// 这两种是最常用的
+
+//当一个结点都没有的时候，头(prev)指向自己和尾(head->next)指向自己，都要指向自己
+//尾插一个的时候，让上一个结点尾->next指向新加结点,然后让新的头结->prev指向上一个结点
+// 再让头结点的头->prev指向最后一个结点,最后让最后一个结点尾->next指向头节点
+
+//在头文件中重要的都打上标记//***
+//一般都是链表和顺序表的区别和联系，区别(优缺点)
+//链表是如何产生的，是因为数组的缺陷而产生的
+//顺序表就是在数组的基础上实现增删查改，并且插入时可以动态增长(但这种增容是要付出代价的)
+// 顺序表缺陷：可能存在一定的空间浪费、增容有一些效率损失、中间或者头部的插入删除，时间复杂度为O(N),因为要挪动
+// 这些问题由链表解决
+// 链表的缺陷：不能随机访问，不能二分查找，排序
+// 这些问题由数组解决
+// 所以他们是互补的数据结构
+// 数组还有比链表有优势的地方，如：碎片问题、内存污染 ，是与系统相关的
+//
+void TestList()
+{
+	//有两种选择，一种是**pphead二级指针，另一种是返回指针
+	//ListNode* phead = NULL;
+	//ListInit(&phead);
+	ListNode* phead = ListInit();
+
+	//尾插
+	ListPushBack(phead, 1);
+	ListPushBack(phead, 2);
+	ListPushBack(phead, 3);
+	ListPushBack(phead, 4);
+	ListPrint(phead); 
+
+	//尾删
+	ListPopBack(phead);
+	ListPopBack(phead);
+	ListPopBack(phead);
+	ListPopBack(phead);
+	ListPrint(phead);
+
+	//头插
+	ListPushFront(phead, -2);
+	ListPushFront(phead, -1);
+	ListPushFront(phead, 0);
+	ListPushFront(phead, 1);
+	ListPrint(phead);
+
+	//头删
+	ListPopFront(phead);
+	ListPopFront(phead);
+	ListPrint(phead);
+
+	//销毁(包括头节点)
+	ListDestory(&phead);
+}
+
+void TestList2()
+{
+	ListNode* phead = ListInit();
+	
+	//尾插
+	ListPushBack(phead, 1);
+	ListPushBack(phead, 2);
+	ListPushBack(phead, 3);
+	ListPushBack(phead, 4);
+	ListPrint(phead);
+
+	//查找&&修改
+	ListNode* pos = ListFind(phead,3);
+	pos->data = 300;
+
+	//随机插入
+	ListInsert(pos, 30);
+	ListPrint(phead);
+
+	//随机删除
+	ListErase(pos);
+	ListPrint(phead);
+
+	//销毁(包括头节点)
+	ListDestory(&phead);
+
+}
+
+int main()
+{
+	TestList();
+	//TestList2();
+
+	return 0;
+}

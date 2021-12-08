@@ -1,0 +1,252 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+#include<stdio.h>
+#include<stdbool.h>//注意这里的bool类型，只能返回falst(0)和true(1)；
+#include<stdlib.h>
+#include<assert.h>
+//严格讲
+// 数据结构是存储
+// 算法是操作
+//广义的讲
+// 数据结构也可以包含算法
+
+//线性结构
+// 连续存储 - 数组
+// 离散存储 - 链表
+// 
+//栈与队列
+// 函数调用是通过栈来实现的，包括内存分配。没有栈，所有的语言都实现不了
+// 所有和时间有关的操作都要用到队列的知识
+
+//定义了一个数据类型，改数据的类型的名字叫做struct Arr,该数据类型含有三个成员，分别是pBase，len，cnt
+typedef struct Arr
+{
+	int* pBase;//存储的是数组第一个元素的地址
+	int len;//数组所容纳的最大元素的个数
+	int cnt;//当前数组有效元素的个数
+	//int increment;//自动增长因子，就是增容。
+}Arr;
+
+//初始化
+void initArr(Arr*pArr,int length);
+//增容
+bool appendArr(Arr* pArr, int val);//bool类型只有0和1两种状态，结果为真返1，结果为假反0
+//插入
+bool insertArr(Arr* pArr, int pos,int val);//pos位置，val插入的值
+//删除
+bool deleteArr(Arr* pArr, int pos, int *pVal);//要返回删除的那个值,待删除的值赋给了pVal
+//获取下标的值
+int get();
+//判断它是否为空
+bool isEmpty(Arr* pArr);
+//判断它是否满了
+bool isFull(Arr* pArr);
+//排序
+void sortArr(Arr* pArr);
+//显示输出
+void printArr(Arr*pArr);
+//倒置
+void inversionArr(Arr* pArr);
+
+int main()
+{
+	Arr arr;//有空间，但是里面的数据是垃圾数据要初始化
+	int len;
+	int val;
+	scanf("%d", &len);
+	initArr(&arr,len);//第一种传地址
+	printArr(&arr);
+
+	//添加
+	appendArr(&arr, 1);
+	appendArr(&arr, 2);
+	appendArr(&arr, 3);
+	appendArr(&arr, 4);
+	//if (appendArr(&arr, 5))
+	//{
+	//	printf("加入成功\n");
+	//}
+	//else
+	//{
+	//	printf("加入失败\n");
+	//}
+	
+	//插入
+	insertArr(&arr, 5, 99);
+	insertArr(&arr, 6, 10);
+	printArr(&arr);
+
+	//删除
+	if (deleteArr(&arr, 6, &val)) //待删除的值赋给了pVal
+	{
+		printf("删除成功，元素是%d\n",val);
+	}
+	else
+	{
+		printf("删除失败\n");
+	}
+	printArr(&arr);
+
+	//倒置
+	inversionArr(&arr);
+	printArr(&arr);
+
+	//排序
+	sortArr(&arr);
+	printArr(&arr);
+
+
+	return 0;
+}
+
+//初始化
+void initArr(Arr*pArr,int length)
+{
+	pArr->pBase = (int*)malloc(sizeof(int)*length);
+	if (NULL == pArr->pBase)
+	{
+		printf("分配失败\n");
+		exit(-1);//终止整个程序
+	}
+	else
+	{
+		pArr->len = length;
+		pArr->cnt = 0;//因为现在是初始化，没有赋值。有效数为0
+	}
+	return;
+}
+
+//输出
+void printArr(Arr* pArr)
+{
+	assert(pArr);
+	if (isEmpty(pArr))//这里加&符号时候会变成地址的地址，就是二级指针
+	{
+		printf("为空鬼\n");
+	}
+	else
+	{
+		for (int i = 0; i < pArr->cnt; i++)//记住是有效元素打印的是有效元素
+		{
+			printf("%d ", pArr->pBase[i]);//pArr是结构体，结构体中的pBase才是数组，数组这么打印，还不是数组名加[i]
+		}
+		printf("\n");
+	}
+
+}
+
+//判断数组是否为空
+bool isEmpty(Arr* pArr)
+{
+	if (NULL == pArr->cnt)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+//判断它是否满了
+bool isFull(Arr* pArr)
+{
+	if (pArr->cnt == pArr->len)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+//加入数据(不是增容空间)
+bool appendArr(Arr* pArr, int val)//bool类型只有0和1两种状态，结果为真返1，结果为假反0
+{
+	if (isFull(pArr))//满了
+	{
+		return false;
+	}
+	//不满
+	//因为cnt是有效数，因为初始化是0开始，cnt可以当作下标。当作下标后加入值val,++才会下一个
+	pArr->pBase[pArr->cnt++] = val;
+	return true;
+}
+
+//插入值
+bool insertArr(Arr* pArr, int pos, int val)//pos位置，val插入的值。pos前面插入值，插入之后后面的数组要向后移动，先移动最后一个其次倒数第二个......
+{
+	//这个函数的缺点是pos传的值，与i+1是否越界访问,还有满了
+	if (pos<0 || pos>pArr->cnt+1)//这样可以在尾插了
+	{
+		printf("pos不对");
+		return false;
+	}
+	else if (isFull(pArr))
+	{
+		return false;
+	}
+
+	for (int i = pArr->cnt-1; i >= pos-1; i--)//因为cnt要作为下标要-1，而不是有效数，pos也是要作为下标，所以-1，又因为要在pos前面插入所以>=
+	{
+		pArr->pBase[i + 1] = pArr->pBase[i];//右边是值赋给左边
+	}
+	pArr->pBase[pos - 1] = val;
+	pArr->cnt++;
+	return true;
+}
+
+//删除
+bool deleteArr(Arr* pArr, int pos, int* pVal)//pos是删除下标的位置
+{
+	if (isEmpty(pArr))
+	{
+		return false;
+	}
+	else if (pos<1 || pos>pArr->cnt)//因为删除和插入不同，所以不一样，因为插入可以在最后一个tne的下一个插入，删能在最后一个tne的下一个删吗
+	{
+		return false;
+	}
+	*pVal = pArr->pBase[pos - 1];//返回要删除下标所对应的元素
+	for (int i = pos; i < pArr->cnt; i++)//删的是下标pos-1对应的元素被删，这里pos下标是下一个元素下标，所以for循环要把链表向前移动，来填补删除pos-1下标对应元素的空缺，而下一个元素下标是pos
+	{
+		pArr->pBase[i - 1] = pArr->pBase[i];
+	}
+	pArr->cnt--;
+}
+
+//倒置(无论基数还是偶数都可以)
+void inversionArr(Arr* pArr)
+{
+	int i = 0;
+	int j = pArr->cnt-1;//还是下标问题
+	int t;
+
+	while (i<j)
+	{
+		t = pArr->pBase[i];
+		pArr->pBase[i] = pArr->pBase[j];
+		pArr->pBase[j] = t;
+		i++;
+		j--;
+	}
+	return;
+}
+
+//排序(选择(升序))时间复杂度是O^2
+void sortArr(Arr* pArr)
+{
+	int i, j,t;
+	for ( i = 0; i < pArr->cnt; i++)
+	{
+		for ( j = i+1; j < pArr->cnt; j++)
+		{
+			if (pArr->pBase[i]>pArr->pBase[j])
+			{
+				t = pArr->pBase[i];
+				pArr->pBase[i] = pArr->pBase[j];
+				pArr->pBase[j] = t;
+			}
+		}
+	}
+}

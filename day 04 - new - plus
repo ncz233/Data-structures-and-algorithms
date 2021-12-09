@@ -1,0 +1,71 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+#include<stdio.h>
+#include<stdlib.h>
+
+//链表
+//链表的重要性，下面要学的数图都是链表的变种。所以要想学会树和图要先学会链表
+
+//typedef int data;//tyoedef是重新定义类型，int与data一模一样。最后是为了方便，用int和data一样
+//typedef struct Student
+//{
+//	int sid;
+//	char name;
+//	char sex;
+//}* PST, STU;//加了* 。PST等价于struct Student*。记住从struct Student到*(PST前面的内容)是一个数据类型是struct Student*类型，而PST是个指针
+////加了STU。等价于STU代表struct Student类型，PST代表struct Student*类型。注意：尽量大写，因为看到别人看到会觉得某一个数据类型别名
+//
+//int main()
+//{	
+//	//struct Student st;//等价于ST st(没加*之前)
+//	//struct Student *pst = &st;//等价于ST* pst = &st(没加*之前)
+//
+//	STU st;//struct Student st
+//	PST ps = &st;//struct Student* ps = &st
+//	ps->sid = 99;
+//	printf("%d\n", ps->sid);
+//
+//	return 0;
+//}
+
+//每个结点至少存有效数据和指向下一个结点的指针。每个结点的数据类型是一样的，指针指的是整个结点(不是指向某一部分)(套娃)，一般不能指向本身(除非是只有一个头或首节点的双向链表)
+typedef int datatype;//data是数据的意思，type是类型的意思
+typedef struct node//node是结点的意思
+{
+	datatype data;//数据域
+	struct Student* next;//指针域 - 指向一个和它本身存储指向下一个结点的指针(说人话就是，指向下一个和它数据结构相同的地址)
+}NODE,*PNODE;//NODE等价于struct node，*PNODE等价于struct node*
+
+int main()
+{
+
+	return 0;
+}
+
+//添加新节点
+//PNODE p = (PNODE)malloc(sizeof(NODE));//向操作系统申请一块struct node大小的空间，因为malloc默认返回的是一个字节的地址，所以强制转换返回struct node*的地址
+//free (p);//删除的是p指向结点所占的内存，不是删除p本身所占用的内存。p = 开辟空间的地址，开辟空间的地址就是开辟空间，因为指针它只能指向地址，不能指向对象
+//p->pNext;//p所指向结构体变量中的pNext成员本身，而pNext是指向下一个结点的地址。所以这个意思是p的下一个结点(知道地址就能找到了)
+//malloc申请内存是动态内存，是存到堆区的，要手动释放还给操作系统，不然会出现内存泄露
+//指针变量p是变量是存在栈内存上的
+
+//伪算法
+//插入结点 - 新结点的指针指向要插入位置的后一个结点，然后前一个结点的指针指向新结点。或者拿一个指针指向要插入位置的后一个结点，前一个结点的指针指向新结点，新节点的指针指向要插入位置的后一个结点。
+//新结点i 2种方法
+// 1.i->pNext = p->pNext->pNext;  p->pNext = i;
+// 2.PNODE r = p->pNext->pNext;  p->pNext = i;  i->pNext = r;
+ 
+//删除结点 - 先存储上要删除的结点(因为要释放)，要删除的结点的上一个结点指针指向要删除的结点的下一个结点，然后要释放要删除的结点
+//准确来说你知道结点p吗，你只知道data，所以写一个查找data找到返回结点的地址，找不到返回NULL。
+// 这个是删除元素data后的结点不算但是说一下：写个查找data的结点找到返回它的地址找不到返回空(NULL)。然后就可以删除元素data后的结点
+//删除data元素的结点  前一个指针找到data返回后一个指针的地址，如果前指针为空(NULL)返回空(NULL)(仅限于双链表)
+// PNODE r = p
+// PNODE j = p->指向上一个的指针
+// j->pNext = j->pNext->pNext
+// free(r); 
+// 
+// 如果是单链表还是先要查找data然后删除data元素，但是单链表有个严重缺陷，就是不能访问上一个结点，所以双指针，一个在前(qian)，一个在后(hou)紧挨着走。前一个指针找到，返回后一个指针，前一个指针为NULL结束
+// PNODE r = hou->pNext
+// PNODE j = hou->pNext->pNxt
+// hou->pNext = j
+// free (r)
+//

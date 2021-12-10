@@ -1,0 +1,257 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+#include<stdio.h>
+#include<stdlib.h>
+#include<stdbool.h>
+
+//开始链表制作
+typedef int dataType;
+typedef struct node
+{
+	dataType data;//数据域
+	struct node* next;//指针域
+}NODE, *PNODE;//NODE等价于struct node，*PNODE等价于struct node*
+
+
+//创建一个非循环单链表
+PNODE CureteList();
+//遍历(打印)
+void PrintList(PNODE pHead);
+//判断链表是否为空
+bool IsEmpty(PNODE pHead);
+//判断链表是否满
+//bool IsFull(PNODE pHead);//链表满可以自己放啊，这个鬼
+//判断链表长度
+int LengthList(PNODE pHead);
+//插入
+bool InsertList(PNODE,int/*位置*/, dataType/*数据*/);
+//删除
+bool delete(PNODE, int/*位置*/, dataType*/*返回删除结点的数据*/);
+//排序
+void SortList(PNODE);
+
+
+int main()
+{
+	dataType val;
+	PNODE pHead = NULL;//等价于struct node* pHead = NULL;头节点
+	pHead = CureteList();//创建一个非循环单链表，并将头节点的地址赋值给pHead
+	PrintList(pHead);//遍历一个一个拉出来(打印链表)
+	if (IsEmpty(pHead))
+	{
+		printf("链表为空");
+	}
+	else
+	{
+		printf("链表不为空");
+	}
+	int len = LengthList(pHead);//长度
+	printf("长度为%d", len);
+
+	SortList(pHead);//排序
+	PrintList(pHead);
+
+	InsertList(pHead, 2, 22);//插入
+	PrintList(pHead);
+
+	if (delete(pHead, 3, &val))//删除
+	{
+		printf("删除成功，元素是：%d\n",val);
+	}
+	else
+	{
+		printf("删除失败");
+	}
+	PrintList(pHead);
+
+
+	return 0;
+}
+
+
+//void f()
+//{
+//	int i = 10;//这个函数结束，会销毁栈空间里的内容，栈里存，局部变量，所以变量i会被摧毁，指针变量也是变量所以p也会被摧毁，
+//	int* p = (int*)malloc(100);//堆区内容不会，堆区存的是动态内存，所以函数结束不会销毁动态内存，但是要手动创建和释放
+//}
+
+//创建一个非循环单链表
+PNODE CureteList()
+{
+	int len;//有效结点的个数
+	int i;//循环
+	dataType val;//临时用来用户存放数据
+	printf("请输入您需要生成的链表结点:len = ");
+	scanf("%d", &len);
+	//头节点
+	PNODE pHead = (PNODE)malloc(sizeof(NODE));
+	if (NULL == pHead)
+	{
+		printf("您不(失败)配(分配)");
+		exit(-1);
+	}
+	//指向尾结点的指针
+	PNODE pTail = pHead;
+	pTail->next = NULL;
+	//要用循环
+	for ( i = 0; i < len; i++)
+	{
+		printf("请输入第%d个结点的值：", i + 1);//因为有头节点
+		scanf("%d", &val);
+		//我们要想分配每一个结点，不能为每一个结点分配一个名字，如果是1万个，那定义1万个名字？
+		//所以我们为每一个临时分配的结点都是用p去表示它，每循环一次就用p指向一个新分配的结点(就是p->next,单链表只能挂在后面)
+		//在for循环前要有一个头节点，for循环是生成有效结点
+		PNODE pNew = (PNODE)malloc(sizeof(NODE));
+		if (NULL == pNew)
+		{
+			printf("您不(失败)配(分配)");
+			exit(-1);
+		}
+		//生成完后这个结点有空间，但是没数据加数据
+		pNew->data = val;
+		//然后要挂在头节点后面
+		//pHead->next = pNew;
+		//因为是单链表所以尾结点的next为空
+		//pNew->next = NULL;
+		//因为是循环所以我么们要吧新生成的结点挂在尾结点的后面所以上面的2步是错的,要这样写
+		pTail->next = pNew;
+		pNew->next = NULL;
+		pTail = pNew;
+	}
+	return pHead;//因为是头节点所以返回
+}
+
+//遍历(打印)
+void PrintList(PNODE pHead)
+{
+	//头节点不能打印，所以定义一个指针p指向phead->next开始打印，每次打印完都要到下一个打印(下一个结点p->next)直到下一个为NULL,看是否有有效节点
+	//if (NULL == pHead->next)
+	//{
+	//	printf("结点为空");
+	//	exit(-1);
+	//}//这一步多余
+	PNODE p = pHead->next;
+	while (NULL != p)
+	{
+		printf("%d ", p->data);
+		p = p->next;
+	}
+	printf("\n");
+	return;
+}
+
+//是否为空
+bool IsEmpty(PNODE pHead)
+{
+	if (NULL == pHead->next)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+//长度
+int LengthList(PNODE pHead)
+{
+	PNODE p = pHead->next;
+	int i = 0;
+	while (NULL != p)
+	{
+		i++;
+		p = p->next;
+	}
+	printf("\n");
+	return i;
+}
+
+//排序(排序算法)
+void SortList(PNODE pHead)
+{
+	//先写数组 - 算法分为狭义，广义，泛型
+	//int i, j, t;
+	//for ( i = 0; i < len-1; i++)//除了自己和其他数做对比，所以len-1，这里全是长度
+	//{
+	//	for ( j = i+1; j < len; j++)//做对比的数比自己的下标大，所以i+1，len是长度，如果算不清，带入算去
+	//	{
+	//		if (a[i]>a[j])
+	//		{
+	//			t = a[i];
+	//			a[i] = a[j];
+	//			a[j] = t;
+	//		}
+	//	}
+	//}
+
+	//链表(与数组类似)
+	PNODE p, q;
+	dataType i, j, t;//必须写，不然把i < len - 1写成p < len - 1，是什么意思，p它是结点，不能比较，结点与结点比较没有意义，结点里数据与结点里数据比较才有意义
+	int len = LengthList(pHead);
+	for (i = 0,p = pHead->next; i < len - 1; i++,p = p->next)
+	{
+		for (j = i + 1,q = p->next; j < len; j++,q = q->next)
+		{
+			if (p->data > q->data)
+			{
+				t = p->data;
+				p->data = q->data;
+				q->data = t;
+			}
+		}
+	}
+}
+
+//插入(在phead所指向链表的第pos个结点的前面插入一个新的结点，该节点的值是val，pos从1开始)
+bool InsertList(PNODE pHead, int pos, dataType val)
+{
+	int i = 0;
+	PNODE p = pHead;
+
+	while (NULL != p && i < pos-1)//求出pos结点在那个地方
+	{
+		p = p->next;
+		i++;
+	}
+	if (i > pos-1 || NULL == p)//判断求出的长读是否合理
+	{
+		return false;
+	}
+	//加如结点
+	PNODE pNew = (PNODE)malloc(sizeof(NODE));
+	if (NULL == pNew)
+	{
+		printf("分配失败");
+		exit(-1);
+	}
+	pNew->data = val;
+	PNODE q = p->next;
+	p->next = pNew;
+	pNew->next = q;
+
+	return true;
+}
+
+//删除
+bool delete(PNODE pHead, int pos, dataType* pVal)
+{
+	int i = 0;
+	PNODE p = pHead;
+
+	while (NULL != p->next && i < pos - 1)//求出pos结点在那个地方
+	{
+		p = p->next;
+		i++;
+	}
+	if (i > pos - 1 || NULL == p->next)//判断求出的长读是否合理
+	{
+		return false;
+	}
+	PNODE q = p->next;
+	*pVal = q->data;
+	//删除
+	p->next = p->next->next;
+	free(q);
+	q = NULL;
+	return true;
+}

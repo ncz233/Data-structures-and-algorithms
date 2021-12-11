@@ -1,0 +1,183 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+#include<stdio.h>
+#include<stdlib.h>
+#include<stdbool.h>
+
+//void f()
+//{
+//	int j;
+//	int* q = (int*)malloc(sizeof(int));
+//}
+//int main()
+//{
+//	int i;
+//	int* p = (int*)malloc(sizeof(int));
+//}
+//总结j,q,i,p实在栈里分配的，malloc实在堆里分配的，
+//栈和堆表示分配数据的一种方式，静态局部变量是压栈和出栈分配的，动态内存是以一种堆排序的方式分配的
+
+//做动态栈 - 就是链表表示(静态栈是数组表示)
+//栈是通过两个来实现的
+typedef int datatype;
+//第一个
+typedef struct node//每个结点的数据类型
+{
+	datatype data;
+	struct node* next;
+}NODE, *PNODE;//不说了前面有
+
+//第二个
+typedef struct stack//这里存放有效数据不方便操作
+{
+	PNODE pTop;//top是顶端(指向顶端),删除一个pot往下移动一个，插入一个pot往上移动一个。因为pot永远指向顶部。不存有效数据
+	PNODE pBottom;//bottom是底部(指向底部)。bottom永远指向底部。不存有效数据
+}STACK, *PSTACK;
+
+
+//判断这个栈是空的 - 两个相等(pTop->next = pBottom)
+bool EmptyStack(PSTACK);
+//判断这个栈是否为满(链表就不存在满不满的问题，所以鬼)
+//初始化
+void InitStack(PSTACK);
+//压(放)个元素
+void PushStack(PSTACK, datatype);
+//打印
+void printStack(PSTACK);
+//出栈(删除)但有可能失败，所以bool
+bool PopStack(PSTACK, datatype);
+//清空(清除有效元素)
+void ClearStack(PSTACK);
+
+
+int main()
+{
+	STACK S;//等价于struct stack S
+	datatype val = 0;//返回删除的data
+	//定义完之后会出现PNODE pTop和PNODE pBottom这两个值，但是存的是随机值所以要初始化
+	InitStack(&S);//初始化(必须有一个结点，头节点也行)完后压(放)元素
+	PushStack(&S, 1);//压个元素,不需要指定位置也不能指定位置，因为只能放在栈顶位置
+	PushStack(&S, 2);//压个元素
+	PushStack(&S, 3);//压个元素
+	PushStack(&S, 4);
+	printStack(&S);//打印
+	if (PopStack(&S, &val))//出栈(删除)
+	{
+		printf("出栈成功，元素是%d\n", val);
+	}
+	else
+	{
+		printf("失败鬼");
+	}
+	printStack(&S);//打印
+
+	ClearStack(&S);//清空
+	PushStack(&S, 9);//压个元素
+	PushStack(&S, 8);//压个元素
+	PushStack(&S, 7);//压个元素
+	printStack(&S);//打印
+
+	ClearStack(&S);//清空
+	if (PopStack(&S, &val))//出栈(删除)
+	{
+		printf("出栈成功，元素是%d\n", val);
+	}
+	else
+	{
+		printf("失败鬼");
+	}
+
+	return 0;
+}
+
+
+//初始化
+void InitStack(PSTACK pS)
+{
+	pS->pTop = (PSTACK)malloc(sizeof(NODE));
+	if (NULL == pS->pTop)
+	{
+		printf("动态内存分配失败");
+		exit(-1);
+	}
+	else
+	{
+		pS->pBottom = pS->pTop;//pS->pTop的空间赋给了pS->pBottom，而pS->pTop是指向这块空间的地址，所以pS->pBottom也指向这块空间的地址,因为这块空间是头节点，所以指针域为NULL
+		pS->pTop->next = NULL;//pS->pBottom->next = NULL这样写也行，因为都是指向同一块空间
+		pS->pBottom->data = NULL;//这步无所谓，我自己瞎写的，但不影响栈
+	}
+	return;
+}
+
+//压(放)个元素
+void PushStack(PSTACK pS, datatype val)
+{
+	PNODE pNew = (PNODE)malloc(sizeof(NODE));
+	pNew->data = val;
+	pNew->next = pS->pTop;//pS->pTop不能改成pS->pBottom
+	pS->pTop = pNew;
+	return;
+}
+
+//打印
+void printStack(PSTACK pS)
+{
+	PNODE p = pS->pTop;
+	while (p != pS->pBottom)
+	{
+		printf("%d", p->data);
+		p = p->next;
+	}
+	printf("\n");
+}
+
+//出栈(删除)但有可能失败，所以bool,返回删除的data
+bool PopStack(PSTACK pS, datatype* val)
+{
+	if (EmptyStack(pS))//pS本身存放的及时S的地址
+	{
+		return false;
+	}
+	else
+	{
+		PNODE cur = pS->pTop;//因为pTop是创建完的新结点，所以pTop指向新的结点(最上面的结点)
+		*val = cur->data;
+		pS->pTop = pS->pTop->next;
+		free(cur);
+		cur = NULL;
+		return true;
+	}
+}
+
+//判断这个栈是空的 - 两个相等(pTop->next = pBottom)
+bool EmptyStack(PSTACK pS)
+{
+	if (pS->pTop == pS->pBottom)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+//清空(清除有效元素)
+void ClearStack(PSTACK pS)
+{
+	if (EmptyStack(pS))
+	{
+		return;
+	}
+	else
+	{
+		PNODE p = pS->pTop;
+		PNODE q = NULL;
+		while (p != pS->pBottom)
+		{
+			q = p->next;
+			free(p);
+			p = q;
+		}
+		pS->pTop = pS->pBottom;//这里要赋值，因为不赋值pS->pTop会指向已被释放的地址，因为上面的p和q会释放完整个栈，所以pS->pTop会指向已被释放的地址
+	}
+}

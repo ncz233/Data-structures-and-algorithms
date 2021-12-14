@@ -1,0 +1,263 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+#include<stdio.h>
+#include<stdlib.h>
+#include<stdbool.h>
+//复习
+//链表
+// 链表如何求长度:设置一个长度计数器，(除了头节点)链表走一步+1，最后指向空结束
+//队列
+// 定义
+//  一种可以实现先进先出的存储结构
+// 分类
+//  静态队列
+//  链式队列
+// 各个参数个伪算法
+
+//循环队列
+//typedef int datatype;
+//typedef struct queue//queue是队列的意思
+//{
+//	datatype* pBase;//代表的是数组
+//	datatype front;//头位置 - 删
+//	datatype rear;//尾位置 - 增
+//}QUEUE;
+//
+//
+////初始化
+//void InitQueue(QUEUE*,datatype);
+////入队
+//bool EnQueue(QUEUE*,datatype,datatype);
+////输出(打印)
+//void PrintQueue(QUEUE*,datatype);
+////判断是否满
+//bool FullQueue(QUEUE*,datatype);
+////出队
+//bool OutQueue(QUEUE*, datatype, datatype*);
+////是否为空
+//bool EmputQueue(QUEUE*);
+//
+//
+//int main()
+//{
+//	QUEUE Q;
+//	int len = 6;
+//	int val = NULL;
+//	InitQueue(&Q,len);
+//	EnQueue(&Q, len, 1);
+//	//EnQueue(&Q, len, 2);
+//	//EnQueue(&Q, len, 3);
+//	//EnQueue(&Q, len, 4);
+//	//EnQueue(&Q, len, 5);
+//	//EnQueue(&Q, len, 6);
+//	//EnQueue(&Q, len, 7);
+//	PrintQueue(&Q, len);
+//
+//	if (OutQueue(&Q, len, &val))
+//	{
+//		printf("出队的元素是%d\n", val);
+//	}
+//	else
+//	{
+//		printf("失败\n");
+//	}
+//	if(OutQueue(&Q, len, &val))
+//	{
+//		printf("出队的元素是%d\n", val);
+//	}
+//	else
+//	{
+//	printf("失败\n");
+//	}
+//	PrintQueue(&Q, len);
+//
+//	return 0;
+//}
+//
+//
+////初始化
+//void InitQueue(QUEUE* pQ,datatype len)
+//{
+//	pQ->pBase = (datatype*)malloc(sizeof(datatype) * len);
+//	pQ->rear = 0;
+//	pQ->front = 0;
+//}
+//
+////入队
+//bool EnQueue(QUEUE* pQ,datatype len, datatype val)
+//{
+//	if (FullQueue(pQ,len))
+//	{
+//		return false;
+//	}
+//	else
+//	{
+//		pQ->pBase[pQ->rear] = val;
+//		pQ->rear = (pQ->rear + 1) % len;
+//		return true;
+//	}
+//}
+//
+////判断是否满
+//bool FullQueue(QUEUE* pQ,datatype len)
+//{
+//	if (pQ->front == (pQ->rear + 1) % len)
+//	{
+//		return true;
+//	}
+//	else
+//	{
+//		return false;
+//	}
+//}
+//
+////输出(打印)
+//void PrintQueue(QUEUE* pQ, datatype len)
+//{
+//	datatype f = pQ->front;
+//	while (f != pQ->rear)
+//	{
+//		printf("%d ", pQ->pBase[f]);
+//		f = (f + 1) % len;
+//	}
+//	printf("\n");
+//	return;
+//}
+//
+////是否为空
+//bool EmputQueue(QUEUE* pQ)
+//{
+//	if (pQ->front == pQ->rear)
+//	{
+//		return true;
+//	}
+//	else
+//	{
+//		return false;
+//	}
+//}
+//
+////出队
+//bool OutQueue(QUEUE* pQ, datatype len, datatype* pVal)
+//{
+//	if (EmputQueue(pQ))
+//	{
+//		return false;
+//	}
+//	else
+//	{
+//		*pVal = pQ->pBase[pQ->front];
+//		pQ->front = (pQ->front + 1) % len;
+//		return true;
+//	}
+//}
+
+
+
+//递归
+//注意：死递归是无线的压栈，直到栈溢出(栈已经满了不能在压了)
+//void f();
+//void g();
+//void k();
+//
+//void f()
+//{
+//	printf("FFFFFFF\n");
+//	g();//走到这里就跑到g了，等g执行完在继续执行下面的
+//	printf("1111111\n");
+//
+//}
+//
+//void g()
+//{
+//	printf("GGGGGGG\n");
+//	k();//走到这里就跑到k了，等k执行完在继续执行下面的
+//	printf("2222222\n");
+//
+//}
+//
+//void k()
+//{
+//	printf("KKKKKKK\n");
+//}
+//
+//void l(int i)
+//{
+//	//int i = 3;//不能这样写，这样写就是死递归了，因为每次递归都是i=3所以是死递归
+//	if (i == 1)
+//	{
+//		printf("哈哈\n");
+//
+//	}
+//	else
+//	{
+//		l(i-1);
+//	}
+//}
+//int main()
+//{
+//	//f();//调用其他的函数
+//	l(3);//调用自己 - 死递归知道栈溢出(栈已经满了不能在压了)所以我们要避免
+//	return 0;
+//}
+
+//n的阶乘 - 1*2*3*4*5*......n - 公式n*(n-1)
+//循环和递归写
+//循环 - 阶乘
+//int main()
+//{
+//	int val = 0;
+//	int i, mult = 1;
+//	printf("输入一个数子\n");
+//	scanf("%d", &val);
+//	
+//	for ( i = 1; i <= val; i++)
+//	{
+//		mult *= i;
+//	}
+//	printf("%d", mult);//如果数字过大超过int类型会变成longlong类型，然后以printf形式打印压入到栈中，printf调用有个约定就是数从右向左压入到栈中
+//	//然后%d表示4个字节补码形式，因为这个数超过4字节太大了所以为0
+//	return 0;
+//}
+
+//递归 - 类似大事化小
+//递归 - 阶乘 - 假设n的值是大于1的值
+//long f(long n)
+//{
+//	if (1 == n)
+//	{
+//		return 1;
+//	}
+//	else
+//	{
+//		return f(n - 1) * n;
+//	}
+//}
+//
+//int main()
+//{
+//	printf("%d\n", f(3));
+//
+//	return 0;
+//}
+
+//递归 - 1+2+3+...100的和
+long sum(long n)
+{
+	if (1 == n)
+	{
+		return 1;
+	}
+	else
+	{
+		return sum(n - 1)+n;
+	}
+}
+
+int main()
+{
+	printf("%ld\n", sum(100));
+
+	return 0;
+}
+
+//作业汉诺塔

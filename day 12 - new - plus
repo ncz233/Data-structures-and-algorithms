@@ -1,0 +1,139 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+#include<stdio.h>
+#include<stdlib.h>
+//最后的一节课 上
+
+//看树遍历
+//前 - ABCDEFGLH
+//中 - CDBAFLGEH
+//后 - DCBLGFHEA
+
+//前 - ABFDCLMN
+//中 - BFACDLNM
+//后 - FBCNMLDA
+
+//前 - MFLAQGBE
+//中 - FALGQMEB
+//后 - AGQLFEBM
+
+//写二叉树 - 链式 - 只用知道根的地址 - 链式二叉树
+//这个二叉树的遍历是
+//前 - ABCDE
+//中 - BADEC
+//后 - BEDCA
+typedef char datatype;
+
+typedef struct BTnode
+{
+	datatype data;
+	struct BTnode* pLchild;//p时指针，l是左，child是孩子
+	struct BTnode* pRchild;//p时指针，r是右，child是孩子
+}BTnode;
+
+
+//初始化 - 动态的(静态的是创建变量，而动态是创建malloc这样的，函数终止的时候会自我摧毁，把栈摧毁了就是变量，而创建的mallco不会被摧毁，因为是动态的，动态内存一定要有返回值)
+BTnode* createBTree();
+//先序
+void PreTraverseBTree(BTnode* pT);
+//中序
+void InTraverseBTree(BTnode* pT);
+//后序
+void PostTraverseBTree(BTnode* pT);
+
+int main()
+{
+	BTnode* pT = createBTree();//初始化
+	
+	PreTraverseBTree(pT);//先序
+	printf("\n");
+	InTraverseBTree(pT);//中序
+	printf("\n");
+	PostTraverseBTree(pT);//后序
+
+	return 0;
+}
+
+
+//初始化
+BTnode* createBTree()//这个可以优化
+{
+	BTnode* pA = (BTnode*)malloc(sizeof(BTnode));
+	BTnode* pB = (BTnode*)malloc(sizeof(BTnode));
+	BTnode* pC = (BTnode*)malloc(sizeof(BTnode));
+	BTnode* pD = (BTnode*)malloc(sizeof(BTnode));
+	BTnode* pE = (BTnode*)malloc(sizeof(BTnode));
+
+	pA->data = 'A';
+	pB->data = 'B';
+	pC->data = 'C';
+	pD->data = 'D';
+	pE->data = 'E';
+
+	pA->pLchild = pB;
+	pA->pRchild = pC;
+	pB->pLchild = pB->pRchild = NULL;
+	pC->pLchild = pD;
+	pC->pRchild = NULL;
+	pD->pLchild = NULL;
+	pD->pRchild = pE;
+	pE->pLchild = pE->pRchild = NULL;
+
+	return pA;
+}
+
+//先序
+void PreTraverseBTree(BTnode* pT)
+{
+	//先根，再左子树，再右子树
+	if (pT != NULL)
+	{
+		printf("%c", pT->data);
+		//pT->pLchild//可以代表整个左子树
+		if (NULL != pT->pLchild)
+		{
+			PreTraverseBTree(pT->pLchild);
+		}
+		if (NULL != pT->pRchild)
+		{
+			PreTraverseBTree(pT->pRchild);
+		}
+	}
+}
+
+//中序
+void InTraverseBTree(BTnode* pT)
+{
+	//先左子树，再中，再右子树
+	if (pT != NULL)
+	{
+		//pT->pLchild//可以代表整个左子树
+		if (NULL != pT->pLchild)
+		{
+			InTraverseBTree(pT->pLchild);
+		}
+		printf("%c", pT->data);
+		if (NULL != pT->pRchild)
+		{
+			InTraverseBTree(pT->pRchild);
+		}
+	}
+}
+
+//后序
+void PostTraverseBTree(BTnode* pT)
+{
+	//先左子树，再右子树，再中
+	if (pT != NULL)
+	{
+		//pT->pLchild//可以代表整个左子树
+		if (NULL != pT->pLchild)
+		{
+			PostTraverseBTree(pT->pLchild);
+		}
+		if (NULL != pT)
+		{
+			PostTraverseBTree(pT->pRchild);
+		}
+		printf("%c", pT->data);
+	}
+}

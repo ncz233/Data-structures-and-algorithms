@@ -1,0 +1,346 @@
+/////////////////树的数据文件
+#pragma once
+#include<stdio.h>
+#include<stdlib.h>
+
+#define NAME_SIZE 255
+
+typedef int dataType;
+
+typedef struct
+{
+	dataType id;
+	char name[NAME_SIZE];
+
+}codeData;
+
+
+///////////////树头文件
+#pragma once
+#include"treeNodeDataFile.h"
+
+typedef struct treeNode
+{
+	codeData val;//树节点
+	struct treeNode* left;//左
+	struct treeNode* right;//右
+
+}TreeNode;
+
+
+
+///////////////////////////////////栈头文件
+#pragma once
+#include"treeNode.h"
+
+//非递归方式的链栈结构
+
+typedef struct stackNode
+{
+	TreeNode* data;	//数据域
+	struct stackNode* next;	//指针域
+}StackNode;
+
+typedef struct
+{
+	StackNode* top;//栈顶结构
+	int length;	//栈长度
+}LinkedStack;
+
+//初始化链栈
+void InitLinkedStack(LinkedStack* linkedStack);
+
+//入栈
+int push_back(LinkedStack* linkedStack, TreeNode* node);
+
+//出栈
+int pop_back(LinkedStack* linkedStack, TreeNode** node);//入栈的时候是一级指针,指针如何指向指针 或者说 指针如何控制指针,只有二级指针.所以二级指针,如果写一级,相当于修改值(值传递)
+
+//栈是否为空
+int IsLinkedStackEmpty(LinkedStack* linkedStack);
+
+
+///////////////总和头文件
+#pragma once
+#include"treeNode.h"
+#include"LinkedStack.h"
+#include<string.h>
+
+typedef struct
+{
+	TreeNode* root;//保存根节点
+	int length;	//节点的总数
+	int depth;	//深度
+	int diameter;	//直径(从叶节点到叶节点的最长路径)
+}BinaryTree;
+
+//初始化
+void InitBinaryTree(BinaryTree* tree);
+
+//创建 - 构造二叉树,外部需要实现对节点分配内存
+TreeNode* CreateBinaryTree(TreeNode* root);
+
+//深度
+int funcDepth(TreeNode* root);
+
+//遍历(前序递归,中序和后序不用写了,都知道了)
+void qxbltree(TreeNode* root);
+
+//遍历(非递归遍历,利用栈)
+void inOrderTraversr_Re(TreeNode* node);
+
+
+//////////////////////////栈的实现
+#define _CRT_SECURE_NO_WARNINGS 1
+#include"LinkedStack.h"
+
+//初始化链栈
+void InitLinkedStack(LinkedStack* linkedStack)
+{
+	linkedStack->top == NULL;//栈节点为空
+	linkedStack->length = 0;
+}
+
+//入栈
+int push_back(LinkedStack* linkedStack, TreeNode* node)
+{
+	//创建栈节点
+	StackNode* tempNode = (StackNode*)malloc(sizeof(StackNode));
+
+	//入栈
+	tempNode->data = node;//最下面的数据是树节点的头一个,以此类推,直到树节点为空
+	tempNode->next = linkedStack->top;//一开始为空,且这是栈,指向空的是在最下面
+
+	linkedStack->top = tempNode;//交换数据
+
+	linkedStack->length++;
+	
+	return 1;
+}
+
+//出栈
+int pop_back(LinkedStack* linkedStack, TreeNode** node)
+{
+	StackNode* tempNode;//临时释放的地址
+
+	if (linkedStack->top == NULL || linkedStack->length == 0)
+	{
+		return 0;
+	}
+	//不为空,返回栈中的数据域 - 难点,二级指针解引用是一级指针的地址
+	*node = linkedStack->top->data;
+	tempNode = linkedStack->top;
+	linkedStack->top = linkedStack->top->next;
+
+	free(tempNode);//释放指针指向的空间
+	tempNode = NULL;
+
+	linkedStack->length--;
+	return 1;
+
+}
+
+//栈是否为空
+int IsLinkedStackEmpty(LinkedStack* linkedStack)
+{
+	if (linkedStack->top == NULL || linkedStack->length == 0)
+	{
+		return 0;
+	}
+	return 1;
+}
+
+
+/////////////////////////总和实现
+#define _CRT_SECURE_NO_WARNINGS 1
+#include"BinaryTree.h"
+
+//静态的, 用来实现节点的自增长
+static int id = 0;
+
+//初始化
+void InitBinaryTree(BinaryTree* tree)
+{
+	tree->root = NULL;
+	tree->length = 0;
+	tree->depth = 0;
+	tree->diameter = 0;
+}
+
+//创建
+TreeNode* CreateBinaryTree(TreeNode* root)
+{
+	if (!root)//节点为空,就退出创建过程
+	{
+		return NULL;
+	}
+
+	char inputName[NAME_SIZE];	//用户输入节点名
+	scanf("%s", &inputName);
+	//用户输入回车表示结束当前子树的创建
+	if (strcmp(inputName, "0") == 0)
+	{
+		return NULL;
+	}
+
+	//创建当前节点
+	root->val.id = ++id;
+	strcpy(root->val.name, inputName);
+
+	//为输入左右节点做准备,分配内存
+	root->left = (TreeNode*)malloc(sizeof(TreeNode));
+	root->right = (TreeNode*)malloc(sizeof(TreeNode));
+
+	//分别递归创建左右子树
+	printf("左节点:\n");
+	if (CreateBinaryTree(root->left) == NULL)
+	{
+		//不在创建这个节点则销毁节点刚分配的内存
+		free(root->left);
+		root->left = NULL;
+	}
+
+	printf("右节点:\n");
+	if (CreateBinaryTree(root->right) == NULL)
+	{
+		//不在创建这个节点则销毁节点刚分配的内存
+		free(root->right);
+		root->right = NULL;
+	}
+	return root;
+}
+
+//前序遍历
+void qxbltree(TreeNode* root)
+{
+	if (!root)
+	{
+		return;
+	}
+
+	printf("%s,%d\t", root->val.name, root->val.id);
+
+	if (root ->left != NULL)
+	{
+		qxbltree(root->left);
+	}
+
+	if (root->right != NULL)
+	{
+		qxbltree(root->right);
+	}
+
+	return;
+
+}
+
+//深度
+int funcDepth(TreeNode* root)
+{
+	if (!root)
+	{
+		return;
+	}
+
+	int myLeft = 1;
+	int myRight = 1;
+
+	if (root->left != NULL)
+	{
+		myLeft += funcDepth(root->left);
+	}
+
+	if (root->right != NULL)
+	{
+		myRight += funcDepth(root->right);
+	}
+
+	if (myLeft > myRight)
+	{
+		return myLeft;
+	}
+	else
+	{
+		return myRight;
+	}
+}
+
+//非递归方式的中序遍历
+void inOrderTraversr_Re(TreeNode* node)
+{
+	//思路 - 根据中序遍历的顺序,对任意节点来讲,有先访问左孩子,而左孩子节点有可以看成一个根节点
+	// 然后继续访问左孩子节点为空的节点,按照相同的规则访问右子树
+	
+	LinkedStack linkedstack;
+	InitLinkedStack(&linkedstack);
+
+	TreeNode* root = node;//每个根节点
+	TreeNode* currNode = (TreeNode*)malloc(sizeof(TreeNode));//保存出栈的留着释放
+	
+	//还需要一个临时指针,用来确保最后释放掉上面分配的内存
+	TreeNode* tempNode = currNode;
+	
+	while (root || IsLinkedStackEmpty(&linkedstack))
+	{
+		if (root)
+		{
+			push_back(&linkedstack, root);
+			root = root->left;
+		}
+		else
+		{
+			//难点,因为是二级指针指针的指针,所以传入地址
+			pop_back(&linkedstack, &currNode);
+			//出栈打印
+			printf("[%s,%d]\t", currNode->val.name, currNode->val.id);
+			root = currNode->right;
+		}
+	}
+	
+	free(tempNode);
+
+
+}
+
+
+///////////////头文件
+#define _CRT_SECURE_NO_WARNINGS 1
+#include"BinaryTree.h"
+
+//整体逻辑使用队列记录节点,不需要递归需要队列,链式队列好写,循环队列知道了内部你就知道怎么写了(需要模运算).
+//先创建二叉树
+
+//开始自己创建个函数
+void TestBinaryTree();
+
+int main()
+{
+	TestBinaryTree();
+	return 0;
+}
+
+void TestBinaryTree()
+{
+	BinaryTree tree;
+	InitBinaryTree(&tree);
+	//容易遗漏的点,根节点要事先分配内存 - C语言的缺点!
+	tree.root = (TreeNode*)malloc(sizeof(TreeNode));
+	printf("请输入根节点");
+	//前序插入(大概)
+	CreateBinaryTree(tree.root);
+
+	//前序遍历
+	qxbltree(tree.root);
+
+	//深度
+	int i = funcDepth(tree.root);
+
+	printf("\n深度是 = %d\n", i);
+
+	//非递归的中序遍历
+	inOrderTraversr_Re(tree.root);
+
+	system("pause");
+
+	free(tree.root);
+}

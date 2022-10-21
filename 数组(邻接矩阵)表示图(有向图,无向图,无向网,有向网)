@@ -59,6 +59,11 @@ Status CreateUDG(MarixGraph* G);
 //使用邻接矩阵创建有向图
 Status CreateDG(MarixGraph* G);
 
+//无向网就是把邻接矩阵的1改成权值就行
+Status CreateUDN(MarixGraph* G);
+
+//有向网就是把不对称的无向网
+Status CreateDN(MarixGraph* G);
 
 //返回某个顶点在顶点集合中的下标(从0开始),不存在返回-1
 int LocateVex(MarixGraph* G, VerTexType* vex);
@@ -167,7 +172,7 @@ int LocateVex(MarixGraph* G, VerTexType* vex)
 //
 Status CreateDG(MarixGraph* G)
 {
-	G->kind = DG;//设置当前创建图的类型为无向图
+	G->kind = DG;//设置当前创建图的类型为有向图
 
 	printf("请输入有向图的顶点数量\n");
 	scanf("%d", &G->verTexCount);
@@ -221,6 +226,126 @@ Status CreateDG(MarixGraph* G)
 	return OK;
 }
 
+//无向网就是把邻接矩阵的1改成权值就行
+Status CreateUDN(MarixGraph* G)
+{
+	G->kind = UDN;//设置当前创建图的类型为无向网
+
+	printf("请输入无向网的顶点数量\n");
+	scanf("%d", &G->verTexCount);
+	printf("边的数量\n");
+	scanf("%d", &G->arcCount);
+
+	printf("依次输入顶点信息\n");
+	for (int i = 0; i < G->verTexCount; i++)
+	{
+		G->verTexS[i] = (VerTexType*)malloc(sizeof(VerTexType) * 10);//数组类型,整形的char类型
+		printf("顶点%d:", i + 1);
+		scanf("%s", G->verTexS[i]);
+	}
+
+	//初始邻接矩阵所有边的权值设置为0
+	for (int i = 0; i < G->verTexCount; i++)
+	{
+		for (int j = 0; j < G->verTexCount; j++)
+		{
+			G->arcs[i][j] = INT_MAX;//默认为整形最大值,代表无穷大
+		}
+	}
+
+	printf("请输入顶点和临界顶点信息,构建邻接矩阵\n");
+	for (int i = 0; i < G->arcCount; i++)
+	{
+		VerTexType* vex1 = (VerTexType*)malloc(sizeof(VerTexType) * 10);
+		VerTexType* vex2 = (VerTexType*)malloc(sizeof(VerTexType) * 10);
+
+		printf("顶点:");
+		scanf("%s", vex1);
+		printf("临界点(与顶点相连的点):");
+		scanf("%s", vex2);
+
+		//分别获得两个顶点在顶点数组中的坐标
+		//int x, y;
+		int x = LocateVex(G, vex1);
+		int y = LocateVex(G, vex2);
+		if (x == -1 || y == -1)
+		{
+			return ERROR;
+		}
+		int value;
+		printf("请输入权值:");
+		scanf("%d", &value);
+		G->arcs[x][y] = value;
+		//无向图邻接表是对称的
+		G->arcs[y][x] = G->arcs[x][y];
+
+		free(vex1);
+		free(vex2);
+	}
+
+	return OK;
+}
+
+//有向网就是把邻接矩阵的1改成权值就行
+Status CreateDN(MarixGraph* G)
+{
+	G->kind = DN;//设置当前创建图的类型为无向图
+
+	printf("请输入有向网的顶点数量\n");
+	scanf("%d", &G->verTexCount);
+	printf("边的数量\n");
+	scanf("%d", &G->arcCount);
+
+	printf("依次输入顶点信息\n");
+	for (int i = 0; i < G->verTexCount; i++)
+	{
+		G->verTexS[i] = (VerTexType*)malloc(sizeof(VerTexType) * 10);//数组类型,整形的char类型
+		printf("顶点%d:", i + 1);
+		scanf("%s", G->verTexS[i]);
+	}
+
+	//初始邻接矩阵所有边的权值设置为0
+	for (int i = 0; i < G->verTexCount; i++)
+	{
+		for (int j = 0; j < G->verTexCount; j++)
+		{
+			G->arcs[i][j] = INT_MAX;//默认为整形的最大值,作为无穷大
+		}
+	}
+
+	printf("请输入顶点和临界顶点信息,构建邻接矩阵\n");
+	for (int i = 0; i < G->arcCount; i++)
+	{
+		VerTexType* vex1 = (VerTexType*)malloc(sizeof(VerTexType) * 10);
+		VerTexType* vex2 = (VerTexType*)malloc(sizeof(VerTexType) * 10);
+
+		printf("顶点:");
+		scanf("%s", vex1);
+		printf("临界点(与顶点相连的点):");
+		scanf("%s", vex2);
+
+		//分别获得两个顶点在顶点数组中的坐标
+		//int x, y;
+		int x = LocateVex(G, vex1);
+		int y = LocateVex(G, vex2);
+		if (x == -1 || y == -1)
+		{
+			return ERROR;
+		}
+		int value;
+		printf("请输入权值:");
+		scanf("%d", &value);
+		G->arcs[x][y] = value;
+		//有向图的邻接矩阵有可能不对称
+		//G->arcs[y][x] = G->arcs[x][y];
+
+		free(vex1);
+		free(vex2);
+	}
+
+	return OK;
+}
+
 //测试
 void testMatrixGrqph()
 {
@@ -230,7 +355,13 @@ void testMatrixGrqph()
 	//Status status = CreateUDG(&G);
 
 	//创建有向图
-	Status status = CreateDG(&G);
+	//Status status = CreateDG(&G);
+	
+	//无向网
+	//Status status = CreateUDN(&G);
+
+	//有向网
+	Status status = CreateDN(&G);
 
 	if (status == ERROR)
 	{
@@ -250,7 +381,15 @@ void testMatrixGrqph()
 		printf("\t%s", G.verTexS[i]);
 		for (int j = 0; j < G.verTexCount; j++)
 		{
-			printf("\t%d", G.arcs[i][j]);
+			if (G.arcs[i][j] == INT_MAX)
+			{
+				printf("\tNULL");
+			}
+			else
+			{
+				printf("\t%d", G.arcs[i][j]);//网中的
+			}
+			//printf("\t%d", G.arcs[i][j]);//图中的
 		}
 		printf("\n");
 	}

@@ -1,0 +1,203 @@
+///////////////////////////////////////G_mode.h
+#pragma once
+//#include<stdio.h>
+//#include<stdlib.h>
+//#include<string.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+
+//表示
+//#define OK 1
+//#define ERROR 0
+//#define MAX_VERTEX 100 //顶点的总数
+#define OK 1
+#define ERROR 0
+#define MAX_VERTEX 100
+
+//图的类型枚举
+//typedef enum
+//{
+//	DG,//有向图 == 0
+//	UDG,//无向图 == 1
+//	DN,//有向网 == 2
+//	UDN//无向网 == 3
+//
+//}GraphKind;
+typedef enum
+{
+	DG,
+	UDG,
+	DN,
+	UDN
+}GraphKind;
+
+//顶点的数据类型为字符型,使用时记得malloc分配内存
+//typedef char VerTexType;
+typedef char VerTexType;
+
+//设置权值类型为整数类型
+//typedef int ArcType;
+typedef int ArcType;
+
+//返回的状态类型
+//typedef int Status;
+typedef int Status;
+
+
+
+////////////////////////////////////////////////////G_ajd_list.h
+#pragma once
+#include"G_mode.h"
+
+//边或者弧的节点
+typedef struct node
+{
+	int adjVex;	//该边指向这条边邻接点的下标
+	struct node* nextEdge;	//指向下一条边节点的指针
+	struct node* nextArc;	//指向下一条弧节点的指针
+	ArcType weight;	//权重
+}EdgeNode,ArcNode;
+
+//顶点节点
+typedef struct vexNode
+{
+	VerTexType* vex;	//定点值
+	EdgeNode* firstEdge;	//指向第一条边的指针
+	ArcNode* firstArc;	//指向第一条弧的指针
+}VNode, AdjList[MAX_VERTEX];
+
+//临界表实现的图结构
+typedef struct adjGraph
+{
+	AdjList vexes;	//邻接表数组
+	int vexCount;	//定点数量
+	//union sdf	//联合体可以用,学过但是忘了,还有切片的我也忘了
+	//{
+	//	int edgeCount;	//图的边数
+	//	int arcCount;	//图的弧数
+	//};
+	int edgeCount;	//图的边数
+	int arcCount;	//图的弧数
+	GraphKind kind;	//图的类型
+
+}AdjListGraph;
+
+//采用邻接表表示法创建无向图
+Status CreateUDG_AdjList(AdjListGraph* G);
+
+//返回顶点vex在顶点数组中的下标,没有找到返回-1
+int LocateVex_AdjList(AdjListGraph* G, VerTexType* vex);
+
+//测试
+void G_TestAdj();
+
+
+
+//////////////////////////////////////////////////////G_ajd_list.c
+#define _CRT_SECURE_NO_WARNINGS 1
+#include"G_ajd_list.h"
+
+//采用邻接表表示法创建无向图
+Status CreateUDG_AdjList(AdjListGraph* G)
+{
+	G->kind = UDG;
+	printf("请输入顶点数量\n");
+	scanf("%d", &G->vexCount);
+	printf("请输入边的数量\n");
+	scanf("%d", &G->edgeCount);
+
+	printf("请依次输入顶点信息\n");
+	for (int i = 0; i < G->vexCount; i++)
+	{
+		G->vexes[i].vex = (VerTexType*)malloc(sizeof(VerTexType) * 10);
+		printf("顶点%d:", i + 1);
+		scanf("%s", G->vexes[i].vex);
+
+		//初始化邻接表,把边置为空
+		G->vexes[i].firstEdge = NULL;
+	}
+
+	printf("请输入顶点和临界点的信息,构建邻接表\n");
+	for (int i = 0; i < G->edgeCount; i++)
+	{
+		VerTexType* vex1 = (VerTexType*)malloc(sizeof(VerTexType) * 10);
+		VerTexType* vex2 = (VerTexType*)malloc(sizeof(VerTexType) * 10);
+		printf("顶点:\n");
+		scanf("%s", vex1);
+		printf("邻接点:\n");
+		scanf("%s", vex2);
+		int x = LocateVex_AdjList(G, vex1);
+		int y = LocateVex_AdjList(G, vex2);
+		if (x == -1 || y == -1)
+		{
+			free(vex1);
+			free(vex2);
+			return ERROR;
+		}
+
+		EdgeNode* edgeNode = (EdgeNode*)malloc(sizeof(EdgeNode));
+		edgeNode->adjVex = x;
+		edgeNode->nextEdge = G->vexes[y].firstEdge;
+		edgeNode->weight = 0;
+		G->vexes[y].firstEdge = edgeNode;
+
+		edgeNode = (EdgeNode*)malloc(sizeof(EdgeNode));
+		edgeNode->adjVex = y;
+		edgeNode->nextEdge = G->vexes[x].firstEdge;
+		edgeNode->weight = 0;
+		G->vexes[x].firstEdge = edgeNode;
+
+		free(vex1);
+		free(vex2);
+	}
+	return OK;
+}
+
+//返回顶点vex在顶点数组中的下标,没有找到返回-1
+int LocateVex_AdjList(AdjListGraph* G, VerTexType* vex)
+{
+	int index = -1;
+	for (int i = 0; i < G->vexCount; i++)
+	{
+		if (strcmp(G->vexes[i].vex, vex) == 0)
+		{
+			index = i;
+			break;
+		}
+	}
+	return index;
+}
+
+//测试
+void G_TestAdj()
+{
+	AdjListGraph G;
+	Status status = CreateUDG_AdjList(&G);
+
+	for (int i = 0; i < G.vexCount; i++)
+	{
+		VNode vNode = G.vexes[i];
+		printf("顶点: %s", vNode.vex);
+		EdgeNode* eNode = vNode.firstEdge;
+		while (eNode)
+		{
+			printf("-> %d", eNode->adjVex);
+			eNode = eNode->nextEdge;
+		}
+		printf("\n");
+	}
+}
+
+
+
+
+/////////////////////////////////////G_list_main.c
+#define _CRT_SECURE_NO_WARNINGS 1
+#include"G_ajd_list.h"
+//
+int main()
+{
+	G_TestAdj();
+	return 0;
+}

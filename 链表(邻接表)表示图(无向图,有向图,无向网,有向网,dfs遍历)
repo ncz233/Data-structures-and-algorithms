@@ -14,6 +14,8 @@
 #define OK 1
 #define ERROR 0
 #define MAX_VERTEX 100
+#define VISITED 1
+#define UNVISITED 0
 
 //图的类型枚举
 //typedef enum
@@ -44,6 +46,8 @@ typedef int ArcType;
 //typedef int Status;
 typedef int Status;
 
+//保存每个顶点的访问状态0未访问,1已访问
+int visited[MAX_VERTEX];
 
 
 ////////////////////////////////////////////////////G_ajd_list.h
@@ -97,6 +101,13 @@ Status CreateDN_AdjList(AdjListGraph* G);
 
 //返回顶点vex在顶点数组中的下标,没有找到返回-1
 int LocateVex_AdjList(AdjListGraph* G, VerTexType* vex);
+
+//dfs遍历核心函数,index时顶点在顶点数组中的下标,也是邻接点的下标
+//用递归来实现回退,也实现了遍历
+void DFS_ALJ(AdjListGraph* G, int index);
+
+//基于邻接表的深度优先搜索
+void DFSTraverse_ALG(AdjListGraph* G);
 
 //测试
 void G_TestAdj();
@@ -358,6 +369,61 @@ Status CreateDN_AdjList(AdjListGraph* G)
 		free(vex2);
 	}
 	return OK;
+}
+
+//基于邻接表的深度优先搜索
+void DFSTraverse_ALG(AdjListGraph* G)
+{
+	//初始化状态数组
+	for (int i = 0; i < G->vexCount; i++)
+	{
+		visited[i] = UNVISITED;
+	}
+	for (int i = 0; i < G->vexCount; i++)
+	{
+		if (!visited[i])
+		{
+			DFS_ALJ(G, i);//如果某个顶点没有被访问过,就递归访问这个顶点
+		}
+	}
+}
+
+//dfs遍历核心函数,index时顶点在顶点数组中的下标,也是邻接点的下标(只被访问一次)
+//用递归来实现回退,也实现了遍历
+//要么邻接表遍历,要么逆邻接表遍历,这里时邻接表
+void DFS_ALJ(AdjListGraph* G, int index)
+{
+	printf(" -> %s", G->vexes[index].vex);
+	visited[index] = VISITED;//设置index的下标的顶点被访问
+
+	//递归访问
+	if (G->kind == UDG || G->kind == UDN)//无向的
+	{
+		EdgeNode* eNode = G->vexes[index].firstEdge;//第一个指针指向的第一个边
+		while (eNode)
+		{
+			if (!visited[eNode->adjVex])//如果邻接点未访问,就递归访问
+			{
+				DFS_ALJ(G, eNode->adjVex);
+			}
+			eNode = eNode->nextEdge;//指针指向下一个边
+
+		}
+	}
+	if (G->kind == DG || G->kind == DN)//又向的,其他同理
+	{
+		ArcNode* aNode = G->vexes[index].firstArc;
+		while (aNode)
+		{
+			if (!visited[aNode->adjVex])
+			{
+				DFS_ALJ(G, aNode->adjVex);
+			}
+			aNode = aNode->nextArc;
+		}
+	}
+}
+
 
 //测试
 void G_TestAdj()
@@ -448,6 +514,8 @@ void G_TestAdj()
 		}
 		printf("\n");
 	}
+	printf("邻接表实现的深度优先遍历\n");
+	DFSTraverse_ALG(&G);
 }
 
 

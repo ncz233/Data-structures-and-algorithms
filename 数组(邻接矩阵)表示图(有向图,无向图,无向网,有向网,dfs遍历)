@@ -34,11 +34,47 @@ typedef	int Status;
 int visited[MAX_VERTEX];
 
 
+///////////////////////////////////////////////////queue.h
+#pragma once
+#include "GraphModel.h"
+
+typedef VerTexType ElemetType;
+
+//链队的结点
+typedef struct qNode
+{
+	ElemetType* data; //数据域
+	struct qNode* next;	//指针域
+}QueueNode;
+
+//队列
+typedef struct
+{
+	QueueNode* qFront;	//头指针删除
+	QueueNode* qRear;	//尾指针插入
+	int length;	//长度
+}LinkedQueue;
+
+//初始化队
+void InitLinkedQueue(LinkedQueue* linkedqueue);
+
+//入队
+void OfferLinkedQueue(LinkedQueue* linkedqueue, ElemetType* data);
+
+//出队
+ElemetType* PollLinkedQueue(LinkedQueue* linkedqueue);
+
+//判断是否为空
+int IsLinkedQueueEmpty(LinkedQueue* linkedqueue);
+
+
+
 ///////////////////////////////////////////MatrixGraph.h
 #pragma once
 //数组的邻接矩阵表示法
 
-#include "GraphModel.h"
+//#include "GraphModel.h"
+#include "queue.h"
 
 //图的邻接矩阵存储表示
 typedef struct
@@ -85,8 +121,77 @@ int FirstAdjVex_AMG(MarixGraph* G, VerTexType* vex);
 //返回与顶点vex1邻接的另一个顶点(除vex2的下一个邻接点),没有返回-1
 int SecondAdjVex_AMG(MarixGraph* G, VerTexType* vex1, VerTexType* vex2);
 
+//bfs遍历逻辑,广度优先搜索的核心算法 - index为广度优先搜索的某个顶点下标
+void BFS_AMG(MarixGraph* G, int index);
+
+//bfs查找,邻接矩阵的广度优先遍历 - 无向图
+void BFSTraverse_AMG(MarixGraph* G);
+
 //测试
 void testMatrixGrqph();
+
+
+///////////////////////////////////////queue.c
+#define _CRT_SECURE_NO_WARNINGS 1
+#include "queue.h"
+
+//初始化队(只有初始化可以定义队头的数据,其他操作不能定义队头数据,只能是队头的下一个指针)(创建对头,类似栈底,画图就知道了)
+void InitLinkedQueue(LinkedQueue* linkedqueue)
+{
+	linkedqueue->qFront = (QueueNode*)malloc(sizeof(QueueNode));	//创建个队列,队列的队头.
+	linkedqueue->qFront->next = NULL;	//队头的下一个节点为空,就是他没哟下一个节点,因为他要先弹出去
+	linkedqueue->qRear = linkedqueue->qFront;	//队尾指向队头,因为要插入的,所以不能为空,初始化队尾指向了队头
+}
+
+//入队
+void OfferLinkedQueue(LinkedQueue* linkedqueue, ElemetType* data)
+{
+	QueueNode* node = (QueueNode*)malloc(sizeof(QueueNode));//创建个链表
+
+	node->data = data;//他的数据是tree的
+	node->next = NULL;//他的下一节点为空,以便循环
+
+	//队头是空的要弹出,所以入队不需要操作队头.
+	linkedqueue->qRear->next = node;//队尾下一个节点插入
+	linkedqueue->qRear = node;//队尾插入
+
+}
+
+//出队
+ElemetType* PollLinkedQueue(LinkedQueue* linkedqueue)
+{
+	ElemetType* data = NULL;//返回的数据
+
+	if (linkedqueue->qFront == linkedqueue->qRear)//这两个指针指向同一块地址就是这个队列为空
+	{
+		return data;
+	}
+
+	QueueNode* node = linkedqueue->qFront->next;//要释放的内存
+	data = node->data;//取出他的数据
+
+	linkedqueue->qFront->next = node->next;//队头的下一个指针指向队头的下下一个地址区域
+	if (linkedqueue->qRear == node)//如果是最后一个数据,那么尾指向头,并且释放数据
+	{
+		linkedqueue->qRear = linkedqueue->qFront;
+	}
+
+	free(node);//释放
+	return data;
+}
+
+//判断是否为空
+int IsLinkedQueueEmpty(LinkedQueue* linkedqueue)
+{
+	if (linkedqueue->qFront == linkedqueue->qRear)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
 
 
 /////////////////////////////////////////////MatrixGraph.c
@@ -454,6 +559,53 @@ int SecondAdjVex_AMG(MarixGraph* G, VerTexType* vex1, VerTexType* vex2)
 	return 0;
 }
 
+//bfs遍历逻辑,广度优先搜索的核心算法 - index为广度优先搜索的某个顶点下标
+void BFS_AMG(MarixGraph* G, int index)
+{
+	printf(" -> %s", G->verTexS[index]);//访问
+	visited[index] = VISITED;//状态以访问
+
+	LinkedQueue queue;
+	InitLinkedQueue(&queue);
+	//当前顶点入队
+	OfferLinkedQueue(&queue, G->verTexS[index]);
+	while (!IsLinkedQueueEmpty(&queue))
+	{
+		//取出队头元素,遍历队头顶点的所有邻接点
+		VerTexType* vex;//准备接收
+		vex = PollLinkedQueue(&queue);
+
+		for (int i = FirstAdjVex_AMG(G, vex); i; i = SecondAdjVex_AMG(G, vex, G->verTexS[i]))
+		{
+			if (!visited[i])
+			{
+				printf(" -> %s", G->verTexS[i]);//访问(遍历)
+				visited[i] = VISITED;//状态以访问
+				OfferLinkedQueue(&queue, G->verTexS[i]);
+			}
+		}
+	}
+}
+
+//bfs查找,邻接矩阵的广度优先遍历
+void BFSTraverse_AMG(MarixGraph* G)
+{
+	//初始化状态数组
+	for (int i = 0; i < G->verTexCount; i++)
+	{
+		visited[i] = UNVISITED;
+	}
+
+	//循环遍历每个顶点
+	for (int i = 0; i < G->verTexCount; i++)
+	{
+		if (!visited[i])//为访问遍历
+		{
+			BFS_AMG(G, i);
+		}
+	}
+}
+
 //测试
 void testMatrixGrqph()
 {
@@ -503,6 +655,10 @@ void testMatrixGrqph()
 	}
 	printf("\n深度优先遍历\n");
 	DFSTraverse_AMG(&G);
+	
+	printf("\n广度优先遍历\n");
+	BFSTraverse_AMG(&G);
+
 }
 
 

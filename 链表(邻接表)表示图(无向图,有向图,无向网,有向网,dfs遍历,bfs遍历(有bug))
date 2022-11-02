@@ -109,8 +109,117 @@ void DFS_ALJ(AdjListGraph* G, int index);
 //基于邻接表的深度优先搜索
 void DFSTraverse_ALG(AdjListGraph* G);
 
+//bfs遍历核心函数,index时顶点在顶点数组中的下标,也是邻接点的下标
+void BFS_ALG(AdjListGraph* G, int index);
+
+//基于邻接表的广度优先搜索
+void BFSTraverse_ALG(AdjListGraph* G);
+
 //测试
 void G_TestAdj();
+
+
+////////////////////////////////////////////////////////queue.h
+#pragma once
+//#include "G_mode.h"
+//
+//typedef VerTexType ElemetType;
+
+#include"G_ajd_list.h"
+
+typedef VNode ElemetType;
+
+
+//链队的结点
+typedef struct qNode
+{
+	ElemetType* data; //数据域
+	struct qNode* next;	//指针域
+}QueueNode;
+
+//队列
+typedef struct
+{
+	QueueNode* qFront;	//头指针删除
+	QueueNode* qRear;	//尾指针插入
+	int length;	//长度
+}LinkedQueue;
+
+//初始化队
+void InitLinkedQueue(LinkedQueue* linkedqueue);
+
+//入队
+void OfferLinkedQueue(LinkedQueue* linkedqueue, ElemetType* data);
+
+//出队
+void PollLinkedQueue(LinkedQueue* linkedqueue, ElemetType** element);
+
+//判断是否为空
+int IsLinkedQueueEmpty(LinkedQueue* linkedqueue);
+
+
+//////////////////////////////////////////////////////////////queue.c
+#define _CRT_SECURE_NO_WARNINGS 1
+#include "queue.h"
+
+//初始化队(只有初始化可以定义队头的数据,其他操作不能定义队头数据,只能是队头的下一个指针)(创建对头,类似栈底,画图就知道了)
+void InitLinkedQueue(LinkedQueue* linkedqueue)
+{
+	linkedqueue->qFront = (QueueNode*)malloc(sizeof(QueueNode));	//创建个队列,队列的队头.
+	linkedqueue->qFront->next = NULL;	//队头的下一个节点为空,就是他没哟下一个节点,因为他要先弹出去
+	linkedqueue->qRear = linkedqueue->qFront;	//队尾指向队头,因为要插入的,所以不能为空,初始化队尾指向了队头
+}
+
+//入队
+void OfferLinkedQueue(LinkedQueue* linkedqueue, ElemetType* data)
+{
+	QueueNode* node = (QueueNode*)malloc(sizeof(QueueNode));//创建个链表
+
+	node->data = data;//他的数据是tree的
+	node->next = NULL;//他的下一节点为空,以便循环
+
+	//队头是空的要弹出,所以入队不需要操作队头.
+	linkedqueue->qRear->next = node;//队尾下一个节点插入
+	linkedqueue->qRear = node;//队尾插入
+	linkedqueue->length++;
+
+}
+
+//出队
+void PollLinkedQueue(LinkedQueue* linkedqueue, ElemetType** element)
+{
+
+	if (linkedqueue->qFront == linkedqueue->qRear)//这两个指针指向同一块地址就是这个队列为空
+	{
+		printf("为空失败\n");
+		return;
+	}
+
+	QueueNode* node = linkedqueue->qFront->next;//要释放的内存
+	*element = node->data;//取出他的数据
+
+	linkedqueue->qFront->next = node->next;//队头的下一个指针指向队头的下下一个地址区域
+	if (linkedqueue->qRear == node)//如果是最后一个数据,那么尾指向头,并且释放数据
+	{
+		linkedqueue->qRear = linkedqueue->qFront;
+	}
+
+	free(node);//释放
+	linkedqueue->length--;
+}
+
+//判断是否为空
+int IsLinkedQueueEmpty(LinkedQueue* linkedqueue)
+{
+	if (linkedqueue->qFront == linkedqueue->qRear)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
 
 
 
@@ -424,6 +533,79 @@ void DFS_ALJ(AdjListGraph* G, int index)
 	}
 }
 
+///基于邻接表的广度优先搜索
+void BFSTraverse_ALG(AdjListGraph* G)
+{
+	for (int i = 0; i < G->vexCount; i++)
+	{
+		visited[i] = UNVISITED;
+	}
+
+	for (int i = 0; i < G->vexCount; i++)
+	{
+		if (!visited[i])
+		{
+			BFS_ALG(G, i);
+		}
+	}
+}
+
+//bfs遍历核心函数,index时顶点在顶点数组中的下标,也是邻接点的下标
+void BFS_ALG(AdjListGraph* G, int index)
+{
+	printf(" -> %s", G->vexes[index].vex);
+	visited[index] = VISITED;//设置顶点状态为以访问
+	LinkedQueue queue;//创建
+	InitLinkedQueue(&queue);//初始化
+	
+	//顶点入队
+	OfferLinkedQueue(&queue, &G->vexes[index]);//指针的地址了&G->vexes[index],所以释放内存会错
+	//不为空,出队
+	while (!IsLinkedQueueEmpty(&queue))
+	{
+		VNode* vNode = (VNode*)malloc(sizeof(VNode));
+		PollLinkedQueue(&queue, &vNode);
+		//获得出队顶点的下标
+		int index_vNode = LocateVex_AdjList(&G, vNode->vex);
+		if (index_vNode == -1)
+		{
+			return;
+		}
+		//遍历顶点对应的边或弧
+		if (G->kind == UDG || G->kind == UDN)
+		{
+			EdgeNode* eNode = G->vexes[index_vNode].firstEdge;
+			while (eNode)
+			{
+				if (!visited[eNode->adjVex])
+				{
+					printf(" -> %s", G->vexes[eNode->adjVex].vex);
+					visited[eNode->adjVex] = VISITED;//设置顶点状态为以访问
+					//顶点入队
+					OfferLinkedQueue(&queue, &G->vexes[eNode->adjVex]);
+				}
+				eNode = eNode->nextEdge;
+			}
+		}
+		else if (G->kind == DG || G->kind == DN)
+		{
+			ArcNode* aNode = G->vexes[index_vNode].firstArc;
+			while (aNode)
+			{
+				if (!visited[aNode->adjVex])
+				{
+					printf(" -> %s", G->vexes[aNode->adjVex].vex);
+					visited[aNode->adjVex] = VISITED;//设置顶点状态为以访问
+					//顶点入队
+					OfferLinkedQueue(&queue, &G->vexes[aNode->adjVex]);
+				}
+				aNode = aNode->nextArc;
+			}
+		}
+		//free(vNode);//释放指针的地址会报错
+	}
+
+}//有Bug
 
 //测试
 void G_TestAdj()
@@ -516,6 +698,8 @@ void G_TestAdj()
 	}
 	printf("邻接表实现的深度优先遍历\n");
 	DFSTraverse_ALG(&G);
+	printf("\n邻接表实现的广度优先遍历\n");
+	BFSTraverse_ALG(&G);
 }
 
 

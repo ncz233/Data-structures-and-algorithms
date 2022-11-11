@@ -47,6 +47,11 @@ int SearchSeqList1(seqList* seqlist, KeyType key);
 //查找2号版本,改进版的二号版本
 int SearchSeqList2(seqList* seqlist, KeyType key);
 
+//二分查找法返回关键字所在的位置(从1开始,没找到就返回0)
+int SearchSeqListBinary(seqList* seqlist, KeyType key);
+
+//排序快排
+void my_qsort(seqList* seqlist, int low, int htgh);
 
 //测试
 void TestSeqListSearch();
@@ -105,6 +110,67 @@ int SearchSeqList2(seqList* seqlist, KeyType key)
 
 }
 
+//二分查找法返回关键字所在的位置(从1开始,没找到就返回0)
+int SearchSeqListBinary(seqList* seqlist, KeyType key)
+{
+	int low = 1;
+	int high = seqlist->length;
+
+	while (low <= high)
+	{
+		int mid = (low + high) / 2;
+		if (key == seqlist->datas[mid].id)
+		{
+			return mid;
+		}
+		else if (key < seqlist->datas[mid].id)
+		{
+			high = mid - 1;
+		}
+		else
+		{
+			low = mid + 1;
+		}
+	}
+	return 0;
+}
+
+//排序快排
+void my_qsort(seqList* seqlist, int low, int htgh)
+{
+	int mid = 0;
+	if (low < htgh)
+	{
+		mid = func(seqlist, low, htgh);
+		my_qsort(seqlist, low, mid - 1);
+		my_qsort(seqlist, mid + 1, htgh);
+	}
+}
+
+//快排核心算法
+int func(seqList* seqlist, int low, int htgh)
+{
+	int ret = seqlist->datas[low].id;
+	ElmentType val = seqlist->datas[low];
+	while (low < htgh)
+	{
+		while (low < htgh && seqlist->datas[htgh].id >= ret)
+		{
+			htgh--;
+		}
+		seqlist->datas[low] = seqlist->datas[htgh];
+
+		while (low < htgh && seqlist->datas[low].id <= ret)
+		{
+			low++;
+		}
+		seqlist->datas[htgh] = seqlist->datas[low];
+	}
+	seqlist->datas[low] = val;
+	seqlist->datas[low].id = ret;
+	return low;
+}
+
 //测试
 void TestSeqListSearch()
 {
@@ -128,7 +194,11 @@ void TestSeqListSearch()
 	printf("普通顺序表查找: searchKey = %d, pos = %d\n", searchKey, pos);
 	pos = SearchSeqList2(&seqlist, searchKey);
 	printf("改进版顺序表查找: searchKey = %d, pos = %d\n", searchKey, pos);
-
+	
+	my_qsort(&seqlist, 1, len);
+	searchKey = 40;
+	pos = SearchSeqListBinary(&seqlist, searchKey);
+	printf("二分查找: searchKey = %d, pos = %d\n", searchKey, pos);//前提是排序好的
 }
 
 

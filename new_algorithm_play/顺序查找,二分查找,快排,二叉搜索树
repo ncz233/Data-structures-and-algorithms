@@ -58,6 +58,43 @@ void TestSeqListSearch();
 
 
 
+////////////////////////////////////////////////////////////////BinarySortTree.h
+#pragma once
+
+//二叉排序树
+#include <stdio.h>
+#include"SeqList.h"
+#include"dataElment.h"
+
+//定义树节点以及二叉树
+typedef struct bstNode
+{
+	ElmentType* data;//节点的数据
+	struct bstNode* leftChild;//指向左子树
+	struct bstNode* rightChild;//指向右子树
+	int length;//节点总数
+}BSTNode,*BSTtree;//一个是值,一个是指针
+
+//初始化
+void InitBSTNode(BSTNode** tree);
+
+//创建二叉排序树,根据顺序表创建二叉排序树, low是最小值下标,high是最大值下标
+void CreateBST(BSTNode** tree, seqList* seqList, int low, int high);
+
+//中序遍历
+void inOrderTraverse(BSTNode* node);
+
+//查找二叉树中关键字key,查找的节点以node返回
+void SearchBST(BSTtree tree, KeyType key, BSTNode** node);
+
+//向二叉排序树插入元素
+void insertBST(BSTtree* tree, ElmentType element);
+
+//测试
+void TestTree();
+
+
+
 /////////////////////////////////////////////////////////seqList.c
 #define _CRT_SECURE_NO_WARNINGS 1
 
@@ -203,14 +240,157 @@ void TestSeqListSearch()
 
 
 
+///////////////////////////////////////////////////////////////////////BinarySortTree.h
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include"BinarySortTree.h"
+
+//初始化
+void InitBSTNode(BSTNode* *tree)
+{
+	*tree = (BSTNode*)malloc(sizeof(BSTNode));
+	(*tree)->leftChild = NULL;
+	(*tree)->rightChild = NULL;
+	(*tree)->length = 0;
+}
+
+//创建二叉排序树,根据顺序表创建二叉排序树,seqlist按升序排序后的顺序表, low是最小值下标,high是最大值下标
+void CreateBST(BSTNode** tree, seqList* seqList, int low, int high)
+{
+	if (low > high)
+	{
+		return 0;
+	}
+
+	int mid = (low + high) / 2;
+	if (!(*tree))//如果为空,需要重新初始化树
+	{
+		*tree = (BSTNode*)malloc(sizeof(BSTNode));
+		(*tree)->leftChild = NULL;
+		(*tree)->rightChild = NULL;
+		(*tree)->length = 0;
+	}
+
+	(*tree)->data = &seqList->datas[mid];
+
+	//递归创建左子树
+	CreateBST(&((*tree)->leftChild), seqList, low, mid - 1);
+
+	//递归创建右子树
+	CreateBST(&((*tree)->rightChild), seqList, mid + 1, high);
+}
+
+//中序遍历
+void inOrderTraverse(BSTNode* node)
+{
+	if (node)
+	{
+		inOrderTraverse(node->leftChild);
+		printf("%d\t%s\n", node->data->id, node->data->name);
+		inOrderTraverse(node->rightChild);
+
+	}
+}
+
+//查找二叉树中关键字key,查找的节点以node返回
+void SearchBST(BSTtree tree, KeyType key, BSTNode** node)
+{
+	if (!tree || key == tree->data->id)
+	{
+		*node = tree;
+	}
+	else if (key < tree->data->id)
+	{
+		SearchBST(tree->leftChild, key, node);
+	}
+	else
+	{
+		SearchBST(tree->rightChild, key, node);
+	}
+}
+
+//向二叉排序树插入元素
+void insertBST(BSTtree* tree, ElmentType element)
+{
+	if (*tree == NULL)//找到可以插入的空节点
+	{
+		BSTNode* newNode = (BSTNode*)malloc(sizeof(BSTNode));
+		newNode->data = &element;
+		newNode->leftChild = newNode->rightChild = NULL;
+		*tree = newNode;
+	}
+	else if (element.id < (*tree)->data->id)
+	{
+		insertBST(&(*tree)->leftChild, element);
+	}
+	else if (element.id > (*tree)->data->id)
+	{
+		insertBST(&(*tree)->rightChild, element);
+	}
+}
+
+//测试
+void TestTree()
+{
+	seqList seqlist;
+	InitSeqList(&seqlist);
+	int keys[] = { 10,40,20,80,2,5,50 };
+	char* valuse[] = { "小黑","阿吉","七二","阿凡达","金克拉","的撒给","的风格" };
+	int len = sizeof(keys) / sizeof(int);
+	for (int i = 1; i <= len; i++)
+	{
+		seqlist.datas[i].id = keys[i - 1];
+		seqlist.datas[i].name = (InfoType*)malloc(sizeof(InfoType) * MAX_RECORD_SIZE);
+		strcpy(seqlist.datas[i].name, valuse[i - 1]);
+		seqlist.length++;
+	}
+	printf("初始化顺序表\n");
+	printSeqList(&seqlist);
+
+	printf("快排\n");
+	my_qsort(&seqlist, 1, len);
+	printSeqList(&seqlist);
+
+	BSTtree tree;
+	InitBSTNode(&tree);
+	CreateBST(&tree, &seqlist, 1, seqlist.length);
+	printf("中序遍历\n");
+	inOrderTraverse(tree);
+
+	int key = 3;
+	ElmentType elem;
+	elem.id = 3;
+	elem.name = (ElmentType*)malloc(sizeof(ElmentType));
+	strcpy(elem.name, "切_格瓦拉");
+	BSTNode* node = (BSTNode*)malloc(sizeof(BSTNode));
+	SearchBST(tree, elem.id, &node);
+	if (node)
+	{
+		printf("结果:%d\t%s\n", node->data->id, node->data->name);
+	}
+	else
+	{
+		printf("没找到\n");
+		insertBST(&tree, elem);
+	}
+	inOrderTraverse(tree);
+
+	free(node);
+}
+
+
+
 ///////////////////////////////////////////////////////////////////main.c
 #define _CRT_SECURE_NO_WARNINGS 1
 
 #include"SeqList.h"
 #include<math.h>
+#include"BinarySortTree.h"
+
 
 int main()
 {
-	TestSeqListSearch();
+	//TestSeqListSearch();
+	TestTree();
 	return 0;
 }
